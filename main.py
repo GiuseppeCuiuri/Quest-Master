@@ -5,7 +5,7 @@ from quest_master.pipeline import QuestPipeline
 
 def main():
     # Estrazione della quest description dal lore document
-    lore_file = Path("../PythonProject1/lore_document.txt")
+    lore_file = Path("../QuestMaster/lore_document.txt")
 
     parser = LoreParser()
     quest_description = parser.extract_informations(lore_file)["quest_description"]
@@ -14,7 +14,7 @@ def main():
     print(quest_description)
 
     # Directory dove salvare gli output
-    output_dir = Path("../PythonProject1/examples/output")
+    output_dir = Path("../QuestMaster/examples/output")
 
     # Crea pipeline
     pipeline = QuestPipeline(output_dir=output_dir)
