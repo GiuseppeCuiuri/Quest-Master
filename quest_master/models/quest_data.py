@@ -17,3 +17,5 @@ class EnhancedQuestData(BaseModel):
     connections: List[Tuple[str, str]] = Field(default_factory=list, description="Collegamenti tra luoghi")
     initial_location: str = Field(default="start", description="Posizione iniziale")
     goal_conditions: List[str] = Field(default_factory=list, description="Condizioni di goal")
+    branching_factor: Optional[Dict[str, int]] = Field(default=None, description="Limiti sul branching factor")
+    depth_constraints: Optional[Dict[str, int]] = Field(default=None, description="Limiti sulla profondità")

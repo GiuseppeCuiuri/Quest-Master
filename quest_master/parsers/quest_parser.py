@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_ollama import ChatOllama
@@ -51,10 +51,26 @@ class QuestParser:
             ))
         ]
 
-    def enhance_quest_data(self, simple_data: SimpleQuestData) -> EnhancedQuestData:
-        """Arricchisce i dati per generare PDDL completo"""
-        # Estrai locations
-        locations = ["start", _normalize(simple_data.destination)]
+    def enhance_quest_data(
+        self,
+        simple_data: SimpleQuestData,
+        branching_factor: Dict[str, int] | None = None,
+        depth_constraints: Dict[str, int] | None = None,
+    ) -> EnhancedQuestData:
+        """Arricchisce i dati per generare PDDL completo applicando i limiti"""
+
+        # Calcola profondità minima richiesta
+        depth = 1
+        if depth_constraints and depth_constraints.get("min", 1) > 1:
+            depth = depth_constraints["min"]
+
+        dest_norm = _normalize(simple_data.destination)
+
+        # Genera percorso lineare con il numero di passi richiesto
+        locations = ["start"]
+        for i in range(1, depth):
+            locations.append(f"loc_{i}")
+        locations.append(dest_norm)
 
         # Estrai items
         items = []
@@ -63,15 +79,27 @@ class QuestParser:
 
         # Crea obstacles mapping
         obstacles = {
-            _normalize(simple_data.destination): _normalize(simple_data.obstacle_key)
+            dest_norm: _normalize(simple_data.obstacle_key)
         }
 
-        # Definisci connections (semplice: start -> destination)
-        connections = [("start", _normalize(simple_data.destination))]
+        # Definisci connections secondo la profondità calcolata
+        connections = []
+        for i in range(len(locations) - 1):
+            current = locations[i]
+            next_loc = locations[i + 1]
+            connections.append((current, next_loc))
+
+            # Crea rami aggiuntivi se richiesto
+            if branching_factor and branching_factor.get("min", 1) > 1:
+                extra = branching_factor["min"] - 1
+                for j in range(extra):
+                    side_loc = f"{current}_b{j+1}"
+                    locations.append(side_loc)
+                    connections.append((current, side_loc))
 
         # Goal conditions
         goal_conditions = [
-            f"at hero {_normalize(simple_data.destination)}",
+            f"at hero {dest_norm}",
             f"defeated {_normalize(simple_data.obstacle_key)}"
         ]
 
@@ -81,6 +109,8 @@ class QuestParser:
             obstacles=obstacles,
             connections=connections,
             initial_location="start",
-            goal_conditions=goal_conditions
+            goal_conditions=goal_conditions,
+            branching_factor=branching_factor,
+            depth_constraints=depth_constraints
         )
 
