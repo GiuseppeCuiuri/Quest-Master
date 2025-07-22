@@ -11,9 +11,19 @@ def _generate_predicates() -> str:
         "    (alive ?a - agent)                    ; agent is alive",
         "    (defeated ?o - obstacle)              ; obstacle is defeated",
         "    (blocked ?from ?to - location)        ; path is blocked between two locations"
-
     ]
     return "\n".join(predicates)
+
+
+def _generate_functions() -> str:
+    """Genera le funzioni numeric-fluents"""
+    funcs = [
+        "    (current-step)",
+        "    (max-depth)",
+        "    (actions-used ?l - location)",
+        "    (branch-limit ?l - location)",
+    ]
+    return "\n".join(funcs)
 
 
 def _move_action() -> str:
@@ -24,10 +34,14 @@ def _move_action() -> str:
   (connected ?from ?to)
   (not (blocked ?from ?to))
   (alive ?a)
+  (< (current-step) (max-depth))
+  (< (actions-used ?from) (branch-limit ?from))
 )
 :effect (and
   (not (at ?a ?from))
   (at ?a ?to)
+  (increase (current-step) 1)
+  (increase (actions-used ?from) 1)
 )
 )"""
 
@@ -39,10 +53,14 @@ def _take_action() -> str:
   (at ?a ?l)
   (at ?i ?l)
   (alive ?a)
+  (< (current-step) (max-depth))
+  (< (actions-used ?l) (branch-limit ?l))
 )
 :effect (and
   (has ?a ?i)
   (not (at ?i ?l))
+  (increase (current-step) 1)
+  (increase (actions-used ?l) 1)
 )
 )"""
 
@@ -55,10 +73,14 @@ def _defeat_obstacle_action() -> str:
   (guarded_by ?l ?o)
   (alive ?a)
   (not (defeated ?o))
+  (< (current-step) (max-depth))
+  (< (actions-used ?l) (branch-limit ?l))
 )
 :effect (and
   (defeated ?o)
   (not (guarded_by ?l ?o))
+  (increase (current-step) 1)
+  (increase (actions-used ?l) 1)
 )
 )"""
 
@@ -81,7 +103,7 @@ class PDDLDomainGenerator:
         """Genera il domain PDDL completo"""
         return f""";; Quest Domain - Auto-generated
 (define (domain {self.domain_name})
-  (:requirements :strips :typing)
+  (:requirements :strips :typing :numeric-fluents)
 
   (:types
     agent location item obstacle - object
@@ -89,6 +111,10 @@ class PDDLDomainGenerator:
 
   (:predicates
 {_generate_predicates()}
+  )
+
+  (:functions
+{_generate_functions()}
   )
 
 {_generate_actions()}
