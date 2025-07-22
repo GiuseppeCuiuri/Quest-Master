@@ -1,0 +1,27 @@
+{
+  "quest_data": {
+    "locations": [
+      "start",
+      "crystal_caverns"
+    ],
+    "items": [],
+    "obstacles": {
+      "crystal_caverns": "golem"
+    },
+    "connections": [
+      [
+        "start",
+        "crystal_caverns"
+      ]
+    ],
+    "initial_location": "start",
+    "goal_conditions": [
+      "at hero crystal_caverns",
+      "defeated golem"
+    ]
+  },
+  "validation": {
+    "is_valid": true,
+    "error": null
+  }
+}
