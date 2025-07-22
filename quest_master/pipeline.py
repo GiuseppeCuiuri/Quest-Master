@@ -2,7 +2,7 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from .parsers.quest_parser import QuestParser
 from .generators.pddl_domain import PDDLDomainGenerator
 from .generators.pddl_problem import PDDLProblemGenerator
@@ -18,13 +18,22 @@ class QuestPipeline:
         self.validator = PDDLValidator()
         self.output_dir = output_dir
 
-    def process(self, quest_description: str) -> Dict[str, Any]:
+    def process(
+        self,
+        quest_description: str,
+        branching_factor: Optional[Dict[str, int]] = None,
+        depth_constraints: Optional[Dict[str, int]] = None,
+    ) -> Dict[str, Any]:
         """Processa una descrizione di quest e genera tutti gli output"""
 
         # 1. Parse della quest
         print("Parsing quest description...")
         simple_quest = self.parser.parse_simple(quest_description)
-        enhanced_quest = self.parser.enhance_quest_data(simple_quest)
+        enhanced_quest = self.parser.enhance_quest_data(
+            simple_quest,
+            branching_factor=branching_factor,
+            depth_constraints=depth_constraints,
+        )
 
         # 2. Genera PDDL in memoria
         print("Generating PDDL domain and problem...")
@@ -62,6 +71,8 @@ class QuestPipeline:
         (self.output_dir / "narrative.txt").write_text(narrative, encoding='utf-8')
         metadata = {
             "quest_data": enhanced_quest.model_dump(),
+            "branching_factor": branching_factor,
+            "depth_constraints": depth_constraints,
             "validation": {
                 "is_valid": is_valid,
                 "error": error_msg
@@ -71,6 +82,8 @@ class QuestPipeline:
 
         return {
             "quest_data": enhanced_quest.model_dump(),
+            "branching_factor": branching_factor,
+            "depth_constraints": depth_constraints,
             "domain_pddl": domain_pddl,
             "problem_pddl": problem_pddl,
             "narrative": narrative,

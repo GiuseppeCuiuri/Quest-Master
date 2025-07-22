@@ -49,6 +49,25 @@ class PDDLProblemGenerator:
         """Genera lo stato iniziale"""
         init_facts = [f"    (at hero {self.quest.initial_location})", "    (alive hero)"]
 
+        # Inizializza funzioni per profondità e branching
+        max_depth = 0
+        if self.quest.depth_constraints and "max" in self.quest.depth_constraints:
+            max_depth = self.quest.depth_constraints["max"]
+        else:
+            max_depth = len(self.quest.locations)
+        init_facts.append(f"    (= (current-step) 0)")
+        init_facts.append(f"    (= (max-depth) {max_depth})")
+
+        branch_limit = None
+        if self.quest.branching_factor and "max" in self.quest.branching_factor:
+            branch_limit = self.quest.branching_factor["max"]
+        for loc in self.quest.locations:
+            if branch_limit is not None:
+                init_facts.append(f"    (= (branch-limit {loc}) {branch_limit})")
+            else:
+                init_facts.append(f"    (= (branch-limit {loc}) {len(self.quest.connections)})")
+            init_facts.append(f"    (= (actions-used {loc}) 0)")
+
         # Hero position and state
 
         # Item positions (all at destination initially)
