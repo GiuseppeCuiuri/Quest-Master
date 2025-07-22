@@ -8,7 +8,10 @@ def main():
     lore_file = Path("../QuestMaster/lore_document.txt")
 
     parser = LoreParser()
-    quest_description = parser.extract_informations(lore_file)["quest_description"]
+    info = parser.extract_informations(lore_file)
+    quest_description = info["quest_description"]
+    branching_factor = info.get("branching_factor")
+    depth_constraints = info.get("depth_constraints")
 
     print("=== Quest Description Extracted ===")
     print(quest_description)
@@ -20,7 +23,11 @@ def main():
     pipeline = QuestPipeline(output_dir=output_dir)
 
     # Processa la quest e salva gli output automaticamente
-    results = pipeline.process(quest_description)
+    results = pipeline.process(
+        quest_description,
+        branching_factor=branching_factor,
+        depth_constraints=depth_constraints,
+    )
 
     # Stampa risultati
     print("\n=== Quest Processing Complete ===")
