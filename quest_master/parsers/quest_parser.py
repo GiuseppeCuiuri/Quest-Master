@@ -59,6 +59,10 @@ class QuestParser:
     ) -> EnhancedQuestData:
         """Arricchisce i dati per generare PDDL completo applicando i limiti"""
 
+        # Calcola profondità minima richiesta
+        depth = 1
+        if depth_constraints and depth_constraints.get("min", 1) > 1:
+            depth = depth_constraints["min"]
         # Calcola la profondità desiderata nel range [min, max]
         min_depth = 1
         max_depth = 1
@@ -92,6 +96,9 @@ class QuestParser:
             next_loc = locations[i + 1]
             connections.append((current, next_loc))
 
+            # Crea rami aggiuntivi se richiesto
+            if branching_factor and branching_factor.get("min", 1) > 1:
+                extra = branching_factor["min"] - 1
             # Gestione branching factor
             if branching_factor:
                 min_b = max(1, branching_factor.get("min", 1))
