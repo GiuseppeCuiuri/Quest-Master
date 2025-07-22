@@ -59,10 +59,13 @@ class QuestParser:
     ) -> EnhancedQuestData:
         """Arricchisce i dati per generare PDDL completo applicando i limiti"""
 
-        # Calcola profondità minima richiesta
-        depth = 1
-        if depth_constraints and depth_constraints.get("min", 1) > 1:
-            depth = depth_constraints["min"]
+        # Calcola la profondità desiderata nel range [min, max]
+        min_depth = 1
+        max_depth = 1
+        if depth_constraints:
+            min_depth = max(1, depth_constraints.get("min", 1))
+            max_depth = max(min_depth, depth_constraints.get("max", min_depth))
+        depth = max_depth
 
         dest_norm = _normalize(simple_data.destination)
 
@@ -89,13 +92,23 @@ class QuestParser:
             next_loc = locations[i + 1]
             connections.append((current, next_loc))
 
-            # Crea rami aggiuntivi se richiesto
-            if branching_factor and branching_factor.get("min", 1) > 1:
-                extra = branching_factor["min"] - 1
+            # Gestione branching factor
+            if branching_factor:
+                min_b = max(1, branching_factor.get("min", 1))
+                max_b = max(min_b, branching_factor.get("max", min_b))
+
+                base_actions = 1  # collegamento principale
+                desired_actions = min_b
+                if desired_actions > max_b:
+                    desired_actions = max_b
+                extra = max(0, min(desired_actions, max_b) - base_actions)
                 for j in range(extra):
                     side_loc = f"{current}_b{j+1}"
                     locations.append(side_loc)
                     connections.append((current, side_loc))
+
+        # Assicura che la destinazione sia l'ultima nella lista delle location
+        locations = [loc for loc in locations if loc != dest_norm] + [dest_norm]
 
         # Goal conditions
         goal_conditions = [
