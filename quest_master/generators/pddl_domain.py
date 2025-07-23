@@ -15,13 +15,9 @@ def _generate_predicates() -> list[str]:
 
 
 def _generate_functions() -> list[str]:
-    """Return numeric fluent lines with comments."""
-    return [
-        "    (current-step) ; current planning step",
-        "    (max-depth) ; maximum allowed depth",
-        "    (actions-used ?l - location) ; actions used at location",
-        "    (branch-limit ?l - location) ; branching limit per location",
-    ]
+    """Generate only the special cost fluent (supported by Fast Downward)."""
+    return ["    (total-cost) ; accumulated action cost"]
+
 
 
 def _move_action() -> list[str]:
@@ -34,14 +30,11 @@ def _move_action() -> list[str]:
         "     (connected ?from ?to) ; locations are connected",
         "     (not (blocked ?from ?to)) ; path is not blocked",
         "     (alive ?a) ; agent must be alive",
-        "     (< (current-step) (max-depth)) ; within depth limit",
-        "     (< (actions-used ?from) (branch-limit ?from)) ; within branch limit",
-        "   ) ; end precondition",
+        "     ) ; end precondition",
         "   :effect (and ; effects of moving",
         "     (not (at ?a ?from)) ; leave old location",
         "     (at ?a ?to) ; arrive at new location",
-        "     (increase (current-step) 1) ; advance step",
-        "     (increase (actions-used ?from) 1) ; count action",
+        "     (increase (total-cost) 1) ; count this action",
         "   ) ; end effect",
         "  ) ; end action",
     ]
@@ -56,14 +49,11 @@ def _take_action() -> list[str]:
         "     (at ?a ?l) ; agent at location",
         "     (at ?i ?l) ; item at same location",
         "     (alive ?a) ; agent alive",
-        "     (< (current-step) (max-depth)) ; within depth",
-        "     (< (actions-used ?l) (branch-limit ?l)) ; within branch limit",
-        "   ) ; end precondition",
+        "     ) ; end precondition",
         "   :effect (and ; effects of taking",
         "     (has ?a ?i) ; agent now has item",
         "     (not (at ?i ?l)) ; item removed from location",
-        "     (increase (current-step) 1) ; advance step",
-        "     (increase (actions-used ?l) 1) ; count action",
+        "     (increase (total-cost) 1) ; count this action",
         "   ) ; end effect",
         "  ) ; end action",
     ]
@@ -79,14 +69,11 @@ def _defeat_obstacle_action() -> list[str]:
         "     (guarded_by ?l ?o) ; obstacle guards location",
         "     (alive ?a) ; agent alive",
         "     (not (defeated ?o)) ; obstacle not already defeated",
-        "     (< (current-step) (max-depth)) ; within depth",
-        "     (< (actions-used ?l) (branch-limit ?l)) ; within branch limit",
-        "   ) ; end precondition",
+        "     ) ; end precondition",
         "   :effect (and ; effects of defeating",
         "     (defeated ?o) ; obstacle defeated",
         "     (not (guarded_by ?l ?o)) ; location unguarded",
-        "     (increase (current-step) 1) ; advance step",
-        "     (increase (actions-used ?l) 1) ; count action",
+        "     (increase (total-cost) 1) ; count this action",
         "   ) ; end effect",
         "  ) ; end action",
     ]
@@ -109,7 +96,7 @@ class PDDLDomainGenerator:
         lines: list[str] = [
             ";; Quest Domain - Auto-generated",
             f"(define (domain {self.domain_name}) ; domain name",
-            "  (:requirements :strips :typing :numeric-fluents) ; requirements",
+            "  (:requirements :strips :typing :action-costs) ; requirements",
             "",
             "  (:types ; type declarations",
             "    agent location item obstacle - object ; basic types",
@@ -120,7 +107,7 @@ class PDDLDomainGenerator:
         lines.extend(_generate_predicates())
         lines.append("  ) ; end predicates")
         lines.append("")
-        lines.append("  (:functions ; numeric fluents")
+        lines.append("  (:functions ; fluents")
         lines.extend(_generate_functions())
         lines.append("  ) ; end functions")
         lines.append("")
