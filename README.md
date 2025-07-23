@@ -62,3 +62,7 @@ Project files to be delivered
 4. **Running the Example**
    - Execute `python main.py` to parse the sample lore document and generate the outputs in `examples/output/`.
 
+
+5. **Interactive HTML Demo**
+   - After generating outputs, run `python frontend/serve.py`.
+   - Open `http://localhost:8000/frontend/index.html` in your browser to play the quest using the React interface.

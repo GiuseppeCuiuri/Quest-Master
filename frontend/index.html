@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuestMaster Interactive Story</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .choices button { margin: 5px; }
+    pre { background: #f4f4f4; padding: 10px; }
+  </style>
+</head>
+<body>
+  <div id="root">Loading...</div>
+
+  <script type="text/babel">
+    const App = () => {
+      const [data, setData] = React.useState(null);
+      const [location, setLocation] = React.useState(null);
+      const [defeated, setDefeated] = React.useState([]);
+      const [log, setLog] = React.useState([]);
+      const [narrative, setNarrative] = React.useState('');
+
+      React.useEffect(() => {
+        fetch('../examples/output/metadata.json')
+          .then(res => res.json())
+          .then(json => {
+            setData(json.quest_data);
+            setLocation(json.quest_data.initial_location);
+          });
+        fetch('../examples/output/narrative.txt')
+          .then(res => res.text())
+          .then(text => setNarrative(text));
+      }, []);
+
+      if (!data || !location) return React.createElement('div', null, 'Loading...');
+
+      const connections = data.connections
+        .filter(c => c[0] === location)
+        .map(c => c[1]);
+
+      const currentObstacle = data.obstacles[location];
+      const isObstacleDefeated = defeated.includes(currentObstacle);
+
+      const goalReached = data.goal_conditions.every(cond => {
+        if (cond.startsWith('at ')) {
+          const target = cond.split(' ')[2];
+          return location === target;
+        }
+        if (cond.startsWith('defeated ')) {
+          const obs = cond.split(' ')[1];
+          return defeated.includes(obs);
+        }
+        return false;
+      });
+
+      const moveTo = dest => {
+        setLocation(dest);
+        setLog(log.concat(`Moved to ${dest}`));
+      };
+
+      const defeat = obs => {
+        if (!defeated.includes(obs)) {
+          setDefeated(defeated.concat(obs));
+          setLog(log.concat(`Defeated ${obs}`));
+        }
+      };
+
+      return (
+        <div>
+          <h1>QuestMaster Interactive Story</h1>
+          <pre>{narrative}</pre>
+          <h2>Current location: {location}</h2>
+          {goalReached ? (
+            <h3>Quest Completed!</h3>
+          ) : (
+            <div className="choices">
+              {currentObstacle && !isObstacleDefeated && (
+                <button onClick={() => defeat(currentObstacle)}>
+                  Defeat {currentObstacle}
+                </button>
+              )}
+              {connections.map(dest => (
+                <button key={dest} onClick={() => moveTo(dest)}>
+                  Go to {dest}
+                </button>
+              ))}
+            </div>
+          )}
+          {log.length > 0 && (
+            <div>
+              <h3>Actions:</h3>
+              <ul>
+                {log.map((l, idx) => <li key={idx}>{l}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
