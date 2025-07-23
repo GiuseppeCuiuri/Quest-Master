@@ -40,3 +40,25 @@ Project files to be delivered
 •	Project Files: Zip file with implemented code
 •	Example of a Quest output: Input Lore document, and the output files (PDDL and HTML).
 
+
+## Setup Guide
+
+1. **Python Environment**
+   - Python 3.10+ is required.
+   - Install dependencies with `pip install -r requirements.txt` (or manually install `langchain`, `ollama`, and `pytest`).
+
+2. **Ollama**
+   - Install from [https://ollama.ai](https://ollama.ai) and ensure the daemon is running.
+
+3. **Fast Downward**
+   - On Linux/macOS download and build the planner:
+     ```bash
+     git clone https://github.com/aibasel/downward.git
+     cd downward && ./build.py
+     ```
+   - On Windows, install WSL and build Fast Downward inside the distribution.
+   - Update `fd_path` in `PDDLValidator` if Fast Downward is not installed in the default location.
+
+4. **Running the Example**
+   - Execute `python main.py` to parse the sample lore document and generate the outputs in `examples/output/`.
+
