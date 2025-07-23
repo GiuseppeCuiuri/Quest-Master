@@ -17,7 +17,7 @@ class LLMConfig:
     # Narrative config
     NARRATIVE_MODEL: str = "llama3:8b"
     NARRATIVE_TEMP: float = 0.8
-    NARRATIVE_MAX_TOKENS: int = 512
+    NARRATIVE_MAX_TOKENS: int = 1024
 
     # Reflection agent config
     REFLECTION_MODEL: str = "llama3:8b"

@@ -39,8 +39,11 @@ def extract_error_block(output: str) -> str:
 
                 if context_lines:
                     return '\n'.join(context_lines)
-                else:
-                    return line.strip()
+            else:
+                # Se non stai usando WSL, questo validatore ora supporta solo WSL
+                return False, "This validator only supports WSL on Windows", None
+                return line.strip()
+
 
     # Se non trova errori specifici, cerca "translate exit code" e trova l'errore correlato
     if re.search(r'translate exit code: (?!0\b)\d+', output):
@@ -84,11 +87,16 @@ def extract_error_block(output: str) -> str:
 
 
 class PDDLValidator:
-    def __init__(self, fd_path: str | None = None, wsl_distro: str = "Ubuntu", wsl_user: str = "giuseppe"):
+    def __init__(self, fd_path: str | None = None, wsl_distro: str = "Ubuntu", wsl_user: str = "giuseppe",
+                 output_dir: str = "examples/output"):
         """Initialize Fast Downward validator with optional WSL support."""
         self.use_wsl = platform.system() == "Windows"
         self.wsl_distro = wsl_distro
         self.wsl_user = wsl_user
+        self.output_dir = Path(output_dir)
+
+        # Crea la cartella di output se non esiste
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
         if fd_path:
             self.fd_path = fd_path
@@ -119,6 +127,17 @@ class PDDLValidator:
             path_str = f"/mnt/{drive}{path_str[2:]}"
         return path_str
 
+    def _wsl_to_windows_path(self, wsl_path: str) -> str:
+        """Converte un path WSL in path Windows"""
+        if wsl_path.startswith('/mnt/'):
+            # Path formato /mnt/c/... -> C:\...
+            parts = wsl_path.split('/')
+            if len(parts) >= 3:
+                drive = parts[2].upper()
+                rest_path = '/'.join(parts[3:]) if len(parts) > 3 else ''
+                return f"{drive}:\\{rest_path.replace('/', chr(92))}"
+        return wsl_path
+
     def _check_wsl(self):
         """Verifica che WSL sia installato e funzionante"""
         try:
@@ -132,8 +151,39 @@ class PDDLValidator:
         except FileNotFoundError:
             raise Exception("WSL not found. Please install WSL on Windows 10/11")
 
-    def validate(self, domain_content: str, problem_content: str) -> Tuple[bool, Optional[str]]:
-        """Validate domain and problem using Fast Downward."""
+    def _copy_plan_from_wsl(self, wsl_working_dir: str) -> Optional[str]:
+        """Copia il piano da WSL alla cartella di output"""
+        try:
+            # Controlla se esiste sas_plan nella directory di lavoro WSL
+            check_plan_cmd = f"test -f {wsl_working_dir}/sas_plan && echo 'PLAN_EXISTS'"
+            result = self._run_wsl_command(check_plan_cmd)
+
+            if "PLAN_EXISTS" not in result.stdout:
+                return None
+
+            # Leggi il contenuto del piano
+            read_plan_cmd = f"cat {wsl_working_dir}/sas_plan"
+            result = self._run_wsl_command(read_plan_cmd)
+
+            if result.returncode == 0 and result.stdout.strip():
+                # Salva il piano nella cartella di output
+                plan_filename = f"problem_plan.txt"
+                plan_path = self.output_dir / plan_filename
+
+                with open(plan_path, 'w', encoding='utf-8') as f:
+                    f.write(result.stdout)
+
+                print(f"Piano salvato in: {plan_path}")
+                return str(plan_path)
+
+        except Exception as e:
+            print(f"Errore durante la copia del piano: {e}")
+
+        return None
+
+    def validate(self, domain_content: str, problem_content: str) -> Tuple[
+        bool, Optional[str], Optional[str]]:
+        """Validate domain and problem using Fast Downward. Returns (success, error_message, plan_path)."""
         with tempfile.TemporaryDirectory() as tmpdir:
             domain_file = Path(tmpdir) / "domain.pddl"
             problem_file = Path(tmpdir) / "problem.pddl"
@@ -144,8 +194,10 @@ class PDDLValidator:
                 if self.use_wsl:
                     wsl_domain = self._windows_to_wsl_path(str(domain_file))
                     wsl_problem = self._windows_to_wsl_path(str(problem_file))
+                    wsl_tmpdir = self._windows_to_wsl_path(tmpdir)
+
                     command = (
-                        f"cd {self.fd_path} && python3 fast-downward.py {wsl_domain} {wsl_problem} "
+                        f"cd {wsl_tmpdir} && python3 {self.fd_path}/fast-downward.py {wsl_domain} {wsl_problem} "
                         f"--evaluator 'eval=hmax()' --search 'lazy_greedy([eval])'"
                     )
                     result = subprocess.run(
@@ -154,17 +206,6 @@ class PDDLValidator:
                         text=True,
                         timeout=30,
                     )
-                else:
-                    cmd = [
-                        str(self.fd_executable),
-                        str(domain_file),
-                        str(problem_file),
-                        "--evaluator",
-                        "eval=hmax()",
-                        "--search",
-                        "lazy_greedy([eval])",
-                    ]
-                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 
                 # Combine stdout and stderr for analysis
                 full_output = result.stdout + "\n" + result.stderr
@@ -175,139 +216,45 @@ class PDDLValidator:
 
                 if result.returncode == 0:
                     if "Solution found!" in full_output:
-                        return True, None
+                        # Copia il piano da WSL
+                        wsl_tmpdir = self._windows_to_wsl_path(tmpdir)
+                        plan_path = self._copy_plan_from_wsl(wsl_tmpdir)
+
+                        return True, None, plan_path
                     elif "Search stopped without finding a solution." in full_output:
-                        return False, "No solution found - goal might be unreachable"
+                        return False, "No solution found - goal might be unreachable", None
                     elif "Completely explored state space -- no solution!" in full_output:
-                        return False, "Goal is provably unreachable from initial state"
+                        return False, "Goal is provably unreachable from initial state", None
                     else:
-                        return False, "Unknown outcome despite successful execution"
+                        return False, "Unknown outcome despite successful execution", None
                 else:
                     error_msg = extract_error_block(full_output)
-                    return False, f"Fast Downward error:\n{error_msg}"
+                    return False, f"Fast Downward error:\n{error_msg}", None
 
             except subprocess.TimeoutExpired:
-                return False, "Validation timeout - problem might be too complex"
+                return False, "Validation timeout - problem might be too complex", None
             except FileNotFoundError:
-                return False, "Fast Downward executable not found"
+                return False, "Fast Downward executable not found", None
             except Exception as e:
-                return False, f"Validation error: {str(e)}"
+                return False, f"Validation error: {str(e)}", None
 
     def check_fast_downward_installation(self) -> bool:
-        """Verify Fast Downward installation depending on the platform."""
+        """Verify Fast Downward installation in WSL."""
         try:
-            if self.use_wsl:
-                check_cmd = f"test -d {self.fd_path} && echo 'EXISTS'"
-                result = subprocess.run(
-                    ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_cmd],
-                    capture_output=True,
-                    text=True,
-                )
-                if "EXISTS" not in result.stdout:
-                    return False
-                check_script = f"test -f {self.fd_path}/fast-downward.py && echo 'SCRIPT_EXISTS'"
-                result = subprocess.run(
-                    ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_script],
-                    capture_output=True,
-                    text=True,
-                )
-                return "SCRIPT_EXISTS" in result.stdout
-            else:
-                return (Path(self.fd_executable).exists())
+            check_cmd = f"test -d {self.fd_path} && echo 'EXISTS'"
+            result = subprocess.run(
+                ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_cmd],
+                capture_output=True,
+                text=True,
+            )
+            if "EXISTS" not in result.stdout:
+                return False
+            check_script = f"test -f {self.fd_path}/fast-downward.py && echo 'SCRIPT_EXISTS'"
+            result = subprocess.run(
+                ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_script],
+                capture_output=True,
+                text=True,
+            )
+            return "SCRIPT_EXISTS" in result.stdout
         except Exception:
             return False
-
-
-if __name__ == "__main__":
-    domain_content = """(define (domain quest-domain)
-      (:requirements :strips :typing)
-      (:types
-        agent location item obstacle - object
-      )
-      (:predicates
-        (at ?a - agent ?l - location)
-        (has ?a - agent ?i - item)
-        (connected ?l1 ?l2 - location)
-        (guarded_by ?l - location ?o - obstacle)
-        (alive ?a - agent)
-        (defeated ?o - obstacle)
-      )
-      (:action move
-        :parameters (?a - agent ?from ?to - location)
-        :precondition (and
-          (at ?a ?from)
-          (connected ?from ?to)
-          (alive ?a)
-        )
-        :effect (and
-          (not (at ?a ?from))
-          (at ?a ?to)
-        )
-      )
-      (:action take
-        :parameters (?a - agent ?i - item ?l - location)
-        :precondition (and
-          (at ?a ?l)
-          (at ?i ?l)
-          (alive ?a)
-        )
-        :effect (and
-          (has ?a ?i)
-          (not (at ?i ?l))
-        )
-      )
-      (:action defeat_obstacle
-        :parameters (?a - agent ?o - obstacle ?l - location)
-        :precondition (and
-          (at ?a ?l)
-          (guarded_by ?l ?o)
-          (alive ?a)
-          (not (defeated ?o))
-        )
-        :effect (and
-          (defeated ?o)
-          (not (guarded_by ?l ?o))
-        )
-      )
-    )
-    """
-
-    problem_content = """(define (problem quest-problem)
-      (:domain quest-domain)
-      (:objects
-        hero - agent
-        start - location
-        crystal_caverns - location
-        golem - obstacle
-      )
-      (:init
-        (at hero start)
-        (alive hero)
-        (connected start crystal_caverns)
-        (connected crystal_caverns start)
-        (guarded_by crystal_caverns golem)
-      )
-      (:goal
-        (and
-          (at hero crystal_caverns)
-          (defeated golem)
-        )
-      )
-    )
-    """
-
-    # Inserisci qui la tua distro e utente WSL
-    validator = PDDLValidator(
-        fd_path="/home/giuseppe/downward",
-        wsl_distro="Ubuntu",
-        wsl_user="giuseppe"
-    )
-
-    if validator.check_fast_downward_installation():
-        print("\nValidating PDDL...")
-        is_valid, error = validator.validate(domain_content, problem_content)
-        print(f"Valid: {is_valid}")
-        if error:
-            print(f"Error: {error}")
-    else:
-        print("\nPlease install Fast Downward in WSL first!")

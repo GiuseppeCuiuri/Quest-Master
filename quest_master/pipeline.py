@@ -49,7 +49,7 @@ class QuestPipeline:
             problem_path.write_text(problem_pddl, encoding="utf-8")
 
             print("Validating PDDL...")
-            is_valid, error_msg = self.validator.validate(
+            is_valid, error_msg, plan_path = self.validator.validate(
                 domain_path.read_text(encoding="utf-8"),
                 problem_path.read_text(encoding="utf-8"),
             )
@@ -60,7 +60,7 @@ class QuestPipeline:
                 result = loop.run(domain_pddl, problem_pddl, quest_description)
                 domain_pddl = result["final_domain"]
                 problem_pddl = result["final_problem"]
-                is_valid, error_msg = self.validator.validate(domain_pddl, problem_pddl)
+                is_valid, error_msg, plan_path = self.validator.validate(domain_pddl, problem_pddl)
 
                 domain_path.write_text(domain_pddl, encoding="utf-8")
                 problem_path.write_text(problem_pddl, encoding="utf-8")
