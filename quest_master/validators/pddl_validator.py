@@ -1,6 +1,7 @@
 import re
 import subprocess
 import tempfile
+import platform
 from pathlib import Path
 from typing import Tuple, Optional
 
@@ -83,25 +84,22 @@ def extract_error_block(output: str) -> str:
 
 
 class PDDLValidator:
-    def __init__(self, fd_path: str = None, wsl_distro: str = "Ubuntu", wsl_user: str = "giuseppe"):
-        """
-        Inizializza il validatore Fast Downward per WSL
-
-        Args:
-            fd_path: Path a Fast Downward in WSL (es. /home/user/downward)
-            wsl_distro: Nome della distribuzione WSL (es. Ubuntu-22.04)
-            wsl_user: Nome utente WSL (es. giuseppe)
-        """
+    def __init__(self, fd_path: str | None = None, wsl_distro: str = "Ubuntu", wsl_user: str = "giuseppe"):
+        """Initialize Fast Downward validator with optional WSL support."""
+        self.use_wsl = platform.system() == "Windows"
         self.wsl_distro = wsl_distro
         self.wsl_user = wsl_user
 
         if fd_path:
             self.fd_path = fd_path
         else:
-            self.fd_path = f"/home/{wsl_user}/downward"
+            self.fd_path = f"/home/{wsl_user}/downward" if self.use_wsl else "/usr/local/bin"
 
-        self._check_wsl()
-        print(f"Fast Downward WSL path: {self.fd_path}")
+        if self.use_wsl:
+            self._check_wsl()
+            print(f"Fast Downward WSL path: {self.fd_path}")
+        else:
+            self.fd_executable = Path(self.fd_path) / "fast-downward.py"
 
     # Modifica nelle chiamate a WSL
     def _run_wsl_command(self, command: str):
@@ -135,31 +133,40 @@ class PDDLValidator:
             raise Exception("WSL not found. Please install WSL on Windows 10/11")
 
     def validate(self, domain_content: str, problem_content: str) -> Tuple[bool, Optional[str]]:
-        """Valida domain e problem PDDL usando Fast Downward in WSL"""
+        """Validate domain and problem using Fast Downward."""
         with tempfile.TemporaryDirectory() as tmpdir:
             domain_file = Path(tmpdir) / "domain.pddl"
             problem_file = Path(tmpdir) / "problem.pddl"
-            domain_file.write_text(domain_content, encoding='utf-8')
-            problem_file.write_text(problem_content, encoding='utf-8')
-
-            wsl_domain = self._windows_to_wsl_path(str(domain_file))
-            wsl_problem = self._windows_to_wsl_path(str(problem_file))
+            domain_file.write_text(domain_content, encoding="utf-8")
+            problem_file.write_text(problem_content, encoding="utf-8")
 
             try:
-                wsl_command = (
-                    f"cd {self.fd_path} && "
-                    f"python3 fast-downward.py {wsl_domain} {wsl_problem} "
-                    f"--evaluator 'eval=hmax()' --search 'lazy_greedy([eval])'"
-                )
+                if self.use_wsl:
+                    wsl_domain = self._windows_to_wsl_path(str(domain_file))
+                    wsl_problem = self._windows_to_wsl_path(str(problem_file))
+                    command = (
+                        f"cd {self.fd_path} && python3 fast-downward.py {wsl_domain} {wsl_problem} "
+                        f"--evaluator 'eval=hmax()' --search 'lazy_greedy([eval])'"
+                    )
+                    result = subprocess.run(
+                        ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", command],
+                        capture_output=True,
+                        text=True,
+                        timeout=30,
+                    )
+                else:
+                    cmd = [
+                        str(self.fd_executable),
+                        str(domain_file),
+                        str(problem_file),
+                        "--evaluator",
+                        "eval=hmax()",
+                        "--search",
+                        "lazy_greedy([eval])",
+                    ]
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
 
-                result = subprocess.run(
-                    ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", wsl_command],
-                    capture_output=True,
-                    text=True,
-                    timeout=30
-                )
-
-                # Combina stdout e stderr per l'analisi completa
+                # Combine stdout and stderr for analysis
                 full_output = result.stdout + "\n" + result.stderr
 
                 print("=== Fast Downward output ===")
@@ -176,52 +183,38 @@ class PDDLValidator:
                     else:
                         return False, "Unknown outcome despite successful execution"
                 else:
-                    # Usa extract_error_block sull'output completo per trovare l'errore
                     error_msg = extract_error_block(full_output)
                     return False, f"Fast Downward error:\n{error_msg}"
 
             except subprocess.TimeoutExpired:
                 return False, "Validation timeout - problem might be too complex"
             except FileNotFoundError:
-                return False, "WSL command not found - ensure WSL is properly installed"
+                return False, "Fast Downward executable not found"
             except Exception as e:
                 return False, f"Validation error: {str(e)}"
 
     def check_fast_downward_installation(self) -> bool:
-        """Verifica che Fast Downward sia installato correttamente in WSL"""
+        """Verify Fast Downward installation depending on the platform."""
         try:
-            check_cmd = f"test -d {self.fd_path} && echo 'EXISTS'"
-            result = subprocess.run(
-                ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_cmd],
-                capture_output=True,
-                text=True
-            )
-
-            if "EXISTS" not in result.stdout:
-                print(f"Fast Downward not found at {self.fd_path}")
-                print("To install Fast Downward in WSL:")
-                print("1. Open WSL terminal")
-                print("2. Run: cd ~")
-                print("3. Run: git clone https://github.com/aibasel/downward.git")
-                print("4. Run: cd downward")
-                print("5. Run: ./build.py")
-                return False
-
-            check_script = f"test -f {self.fd_path}/fast-downward.py && echo 'SCRIPT_EXISTS'"
-            result = subprocess.run(
-                ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_script],
-                capture_output=True,
-                text=True
-            )
-
-            if "SCRIPT_EXISTS" in result.stdout:
-                print("Fast Downward installation verified!")
-                return True
+            if self.use_wsl:
+                check_cmd = f"test -d {self.fd_path} && echo 'EXISTS'"
+                result = subprocess.run(
+                    ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_cmd],
+                    capture_output=True,
+                    text=True,
+                )
+                if "EXISTS" not in result.stdout:
+                    return False
+                check_script = f"test -f {self.fd_path}/fast-downward.py && echo 'SCRIPT_EXISTS'"
+                result = subprocess.run(
+                    ["wsl", "-d", self.wsl_distro, "--user", self.wsl_user, "bash", "-c", check_script],
+                    capture_output=True,
+                    text=True,
+                )
+                return "SCRIPT_EXISTS" in result.stdout
             else:
-                print(f"fast-downward.py not found in {self.fd_path}")
-                return False
-        except Exception as e:
-            print(f"Error checking Fast Downward installation: {e}")
+                return (Path(self.fd_executable).exists())
+        except Exception:
             return False
 
 
