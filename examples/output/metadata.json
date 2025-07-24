@@ -8,23 +8,24 @@
       "loc_4",
       "loc_5",
       "loc_6",
+      "loc_7",
       "crystal_caverns",
       "start_branch1",
       "start_branch2",
       "start_branch3",
       "loc_1_branch1",
+      "loc_1_branch2",
+      "loc_1_branch3",
       "loc_2_branch1",
-      "loc_2_branch2",
-      "loc_2_branch3",
       "loc_3_branch1",
-      "loc_3_branch2",
-      "loc_3_branch3",
       "loc_4_branch1",
-      "loc_4_branch2",
-      "loc_4_branch3",
       "loc_5_branch1",
+      "loc_5_branch2",
       "loc_6_branch1",
-      "loc_6_branch2"
+      "loc_6_branch2",
+      "loc_6_branch3",
+      "loc_7_branch1",
+      "loc_7_branch2"
     ],
     "items": [],
     "obstacles": {
@@ -56,20 +57,20 @@
         "loc_1_branch1"
       ],
       [
+        "loc_1",
+        "loc_1_branch2"
+      ],
+      [
+        "loc_1",
+        "loc_1_branch3"
+      ],
+      [
         "loc_2",
         "loc_3"
       ],
       [
         "loc_2",
         "loc_2_branch1"
-      ],
-      [
-        "loc_2",
-        "loc_2_branch2"
-      ],
-      [
-        "loc_2",
-        "loc_2_branch3"
       ],
       [
         "loc_3",
@@ -80,28 +81,12 @@
         "loc_3_branch1"
       ],
       [
-        "loc_3",
-        "loc_3_branch2"
-      ],
-      [
-        "loc_3",
-        "loc_3_branch3"
-      ],
-      [
         "loc_4",
         "loc_5"
       ],
       [
         "loc_4",
         "loc_4_branch1"
-      ],
-      [
-        "loc_4",
-        "loc_4_branch2"
-      ],
-      [
-        "loc_4",
-        "loc_4_branch3"
       ],
       [
         "loc_5",
@@ -112,8 +97,12 @@
         "loc_5_branch1"
       ],
       [
+        "loc_5",
+        "loc_5_branch2"
+      ],
+      [
         "loc_6",
-        "crystal_caverns"
+        "loc_7"
       ],
       [
         "loc_6",
@@ -122,6 +111,118 @@
       [
         "loc_6",
         "loc_6_branch2"
+      ],
+      [
+        "loc_6",
+        "loc_6_branch3"
+      ],
+      [
+        "loc_7",
+        "crystal_caverns"
+      ],
+      [
+        "loc_7",
+        "loc_7_branch1"
+      ],
+      [
+        "loc_7",
+        "loc_7_branch2"
+      ],
+      [
+        "loc_1",
+        "start"
+      ],
+      [
+        "start_branch1",
+        "start"
+      ],
+      [
+        "start_branch2",
+        "start"
+      ],
+      [
+        "start_branch3",
+        "start"
+      ],
+      [
+        "loc_2",
+        "loc_1"
+      ],
+      [
+        "loc_1_branch1",
+        "loc_1"
+      ],
+      [
+        "loc_1_branch2",
+        "loc_1"
+      ],
+      [
+        "loc_1_branch3",
+        "loc_1"
+      ],
+      [
+        "loc_3",
+        "loc_2"
+      ],
+      [
+        "loc_2_branch1",
+        "loc_2"
+      ],
+      [
+        "loc_4",
+        "loc_3"
+      ],
+      [
+        "loc_3_branch1",
+        "loc_3"
+      ],
+      [
+        "loc_5",
+        "loc_4"
+      ],
+      [
+        "loc_4_branch1",
+        "loc_4"
+      ],
+      [
+        "loc_6",
+        "loc_5"
+      ],
+      [
+        "loc_5_branch1",
+        "loc_5"
+      ],
+      [
+        "loc_5_branch2",
+        "loc_5"
+      ],
+      [
+        "loc_7",
+        "loc_6"
+      ],
+      [
+        "loc_6_branch1",
+        "loc_6"
+      ],
+      [
+        "loc_6_branch2",
+        "loc_6"
+      ],
+      [
+        "loc_6_branch3",
+        "loc_6"
+      ],
+      [
+        "crystal_caverns",
+        "loc_7"
+      ],
+      [
+        "loc_7_branch1",
+        "loc_7"
+      ],
+      [
+        "loc_7_branch2",
+        "loc_7"
       ]
     ],
     "initial_location": "start",
@@ -135,7 +236,7 @@
     },
     "depth_constraints": {
       "min": 3,
-      "max": 7
+      "max": 8
     }
   },
   "branching_factor": {

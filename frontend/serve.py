@@ -1,8 +1,10 @@
 import http.server
 import socketserver
+import argparse
 from pathlib import Path
 
 PORT = 8000
+DEFAULT_PORT = 8000
 
 # Serve files relative to repository root
 HERE = Path(__file__).resolve().parent
@@ -19,4 +21,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     with socketserver.TCPServer(('', PORT), Handler) as httpd:
         print(f"Serving on http://localhost:{PORT}")
+    parser = argparse.ArgumentParser(description="Simple HTTP server for the demo frontend")
+    parser.add_argument('--port', type=int, default=DEFAULT_PORT, help='Port to listen on')
+    args = parser.parse_args()
+    port = args.port
+
+    with socketserver.TCPServer(('', port), Handler) as httpd:
+        print(f"Serving on http://localhost:{port}")
         httpd.serve_forever()

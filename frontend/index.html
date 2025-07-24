@@ -6,8 +6,9 @@
   <title>QuestMaster Interactive Story</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-white text-gray-800">
+<body class="bg-gradient-to-b from-white via-gray-50 to-gray-100 text-gray-800">
   <div id="root" class="max-w-4xl mx-auto p-4">Loading...</div>
+  <audio id="bg-music" src="https://incompetech.com/music/royalty-free/mp3-royaltyfree/Epic%20Unease.mp3" autoplay loop></audio>
 
   <!-- React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -55,9 +56,9 @@
     );
 
     const ProgressBar = ({ progress }) => (
-      <div className="w-full bg-gray-300 h-2 rounded">
+      <div className="w-full bg-gray-300 h-3 rounded">
         <div
-          className="bg-green-500 h-2 rounded transition-all duration-300"
+          className="h-3 rounded bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-300"
           style={{ width: `${Math.floor(progress * 100)}%` }}
         />
       </div>
@@ -78,6 +79,18 @@
       const [completed, setCompleted] = useState(false);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(null);
+      const [musicOn, setMusicOn] = useState(true);
+
+      useEffect(() => {
+        const audio = document.getElementById('bg-music');
+        if (audio) {
+          if (musicOn) {
+            audio.play().catch(() => {});
+          } else {
+            audio.pause();
+          }
+        }
+      }, [musicOn]);
 
       useEffect(() => {
         const loadData = async () => {
@@ -133,15 +146,7 @@
                 }
                 narrativeText = await narrativeResponse.text();
               } catch (e2) {
-                console.warn('File narrative.txt non trovato, uso testo di esempio');
-                narrativeText = `Welcome to QuestMaster Interactive Story!
-
-You are an adventurer on a quest to find the legendary treasure.
-Your journey will take you through mysterious forests, dangerous caves, and ancient castles.
-
-Beware of the creatures that guard the treasure - you must defeat them to complete your quest.
-
-Good luck, brave adventurer!`;
+                console.warn('File narrative.txt non trovato!');
               }
             }
 
@@ -216,23 +221,29 @@ Good luck, brave adventurer!`;
       }
 
       const moves = quest.connections
-        .filter(c => c[0] === state.location)
-        .map(c => c[1]);
+        .flatMap(([src, dst]) => {
+          if (src === state.location) return [dst];
+          if (dst === state.location) return [src];
+          return [];
+        });
+
 
       const obstacle = quest.obstacles[state.location];
       const isDefeated = obstacle && state.defeated.includes(obstacle);
 
       const progressCount = quest.goal_conditions.reduce((count, condition) => {
         if (condition.startsWith('at ')) {
-          const target = condition.substring(3); // Rimuove "at "
+          // condition can be "at location" or "at hero location".
+          const parts = condition.split(' ');
+          const target = parts[parts.length - 1];
           return count + (state.location === target ? 1 : 0);
         }
         if (condition.startsWith('defeated ')) {
-          const enemy = condition.substring(9); // Rimuove "defeated "
+          const enemy = condition.split(' ').pop();
           return count + (state.defeated.includes(enemy) ? 1 : 0);
         }
         return count;
-      }, 0) / quest.goal_conditions.length;
+      }, 0) / (quest.goal_conditions.length || 1);
 
       const moveTo = dest => {
         setState(s => ({
@@ -336,7 +347,13 @@ Good luck, brave adventurer!`;
             </div>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-x-2">
+            <button
+              className="px-4 py-2 text-sm bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors"
+              onClick={() => setMusicOn(!musicOn)}
+            >
+              {musicOn ? '🔈 Mute Music' : '🔊 Play Music'}
+            </button>
             <button
               className="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
               onClick={restart}

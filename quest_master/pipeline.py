@@ -81,8 +81,15 @@ class QuestPipeline:
         )
         (self.output_dir / "lore.txt").write_text(lore_content, encoding="utf-8")
 
+        quest_data = enhanced_quest.model_dump()
+
+        forward = quest_data.get("connections", [])
+        backward = [[dst, src] for src, dst in forward]
+
+        quest_data["connections"] = forward + backward
+
         metadata = {
-            "quest_data": enhanced_quest.model_dump(),
+            "quest_data": quest_data,
             "branching_factor": branching_factor,
             "depth_constraints": depth_constraints,
             "validation": {"is_valid": is_valid, "error": error_msg},

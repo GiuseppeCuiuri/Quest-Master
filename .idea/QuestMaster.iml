@@ -6,6 +6,10 @@
     </content>
     <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at C:\Users\giuse\Desktop\giuseppe\IA Scarcello\Esercitazioni\QuestMaster\.venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="react" level="application" />
+    <orderEntry type="library" name="react-dom" level="application" />
+    <orderEntry type="library" name="babel-standalone" level="application" />
+    <orderEntry type="library" name="@babel/standalone" level="application" />
   </component>
   <component name="PyNamespacePackagesService">
     <option name="namespacePackageFolders">
