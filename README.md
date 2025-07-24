@@ -65,4 +65,5 @@ Project files to be delivered
 
 5. **Interactive HTML Demo**
    - After generating outputs, run `python frontend/serve.py`.
-   - Open `http://localhost:8000/frontend/index.html` in your browser to play the quest using the React interface.
+   - Open `http://localhost:8000/frontend/index.html` in your browser to explore the quest with the updated React interface.
+   - Your progress is stored in `localStorage`; use the **Restart Quest** button to reset.
