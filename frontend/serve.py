@@ -13,7 +13,7 @@ ROOT = HERE.parent
 class Handler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path: str) -> str:
         # Serve metadata and narrative from examples/output
-        if path.startswith('/examples/output'):
+        if path.startswith('examples/output'):
             return str(ROOT / path.lstrip('/'))
         # Otherwise serve from frontend directory
         return str(HERE / path.lstrip('/'))

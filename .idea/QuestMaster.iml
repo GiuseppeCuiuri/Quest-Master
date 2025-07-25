@@ -10,11 +10,14 @@
     <orderEntry type="library" name="react-dom" level="application" />
     <orderEntry type="library" name="babel-standalone" level="application" />
     <orderEntry type="library" name="@babel/standalone" level="application" />
+    <orderEntry type="library" name="bootstrap" level="application" />
+    <orderEntry type="library" name="tailwindcss" level="application" />
   </component>
   <component name="PyNamespacePackagesService">
     <option name="namespacePackageFolders">
       <list>
         <option value="$MODULE_DIR$/quest_master" />
+        <option value="$MODULE_DIR$/frontend" />
       </list>
     </option>
   </component>

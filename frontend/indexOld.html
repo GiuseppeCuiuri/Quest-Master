@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QuestMaster Interactive Story</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-b from-white via-gray-50 to-gray-100 text-gray-800">
+  <div id="root" class="max-w-4xl mx-auto p-4">Loading...</div>
+  <audio id="bg-music" src="https://incompetech.com/music/royalty-free/mp3-royaltyfree/Epic%20Unease.mp3" autoplay loop></audio>
+
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const NarrativePanel = ({ text }) => (
+      <pre className="bg-gray-100 p-4 rounded h-40 overflow-y-auto whitespace-pre-wrap">
+        {text}
+      </pre>
+    );
+
+    const LocationHeader = ({ location, image }) => (
+      <div className="text-xl font-bold flex items-center gap-2 mb-2">
+        {image && <img src={image} alt={location} className="w-8 h-8" />}
+        <span>{location}</span>
+      </div>
+    );
+
+    const ChoicesList = ({ moves, obstacle, onMove, onDefeat }) => (
+      <div className="space-x-2 space-y-2">
+        {obstacle && (
+          <button
+            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none transition-colors"
+            onClick={() => onDefeat(obstacle)}
+          >
+            Defeat {obstacle}
+          </button>
+        )}
+        {moves.map(m => (
+          <button
+            key={m}
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none transition-colors"
+            onClick={() => onMove(m)}
+          >
+            Go to {m}
+          </button>
+        ))}
+      </div>
+    );
+
+    const ProgressBar = ({ progress }) => (
+      <div className="w-full bg-gray-300 h-3 rounded">
+        <div
+          className="h-3 rounded bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-300"
+          style={{ width: `${Math.floor(progress * 100)}%` }}
+        />
+      </div>
+    );
+
+    const ActionLog = ({ log }) => (
+      <ul className="text-sm space-y-1 max-h-32 overflow-y-auto">
+        {log.map((l, i) => (
+          <li key={i} className="text-gray-600">{l.time} – {l.text}</li>
+        ))}
+      </ul>
+    );
+
+    const App = () => {
+      const [quest, setQuest] = useState(null);
+      const [narrative, setNarrative] = useState('');
+      const [state, setState] = useState({ location: null, defeated: [], log: [] });
+      const [completed, setCompleted] = useState(false);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [musicOn, setMusicOn] = useState(true);
+
+      useEffect(() => {
+        const audio = document.getElementById('bg-music');
+        if (audio) {
+          if (musicOn) {
+            audio.play().catch(() => {});
+          } else {
+            audio.pause();
+          }
+        }
+      }, [musicOn]);
+
+      useEffect(() => {
+        const loadData = async () => {
+          try {
+            setLoading(true);
+
+            // Carica i dati salvati se esistono
+            const saved = sessionStorage.getItem('quest_state');
+            let savedState = null;
+            if (saved) {
+              try {
+                savedState = JSON.parse(saved);
+              } catch (e) {
+                console.warn('Errore nel parsing dello stato salvato:', e);
+              }
+            }
+
+            // Carica i dati del quest - prova diversi percorsi
+            let metadata, narrativeText;
+
+            try {
+              const metadataResponse = await fetch('/examples/output/metadata.json');
+              if (!metadataResponse.ok) {
+                throw new Error(`Metadata not found at /examples/output/metadata.json: ${metadataResponse.status}`);
+              }
+              metadata = await metadataResponse.json();
+            } catch (e) {
+              // Prova percorso alternativo
+              try {
+                const metadataResponse = await fetch('./examples/output/metadata.json');
+                if (!metadataResponse.ok) {
+                  throw new Error(`Metadata not found at ./examples/output/metadata.json: ${metadataResponse.status}`);
+                }
+                metadata = await metadataResponse.json();
+              } catch (e2) {
+                console.error('Errore nel caricamento dei metadati:', e2);
+                setError('Impossibile caricare i metadati del quest. Assicurati che il file metadata.json esista.');
+                return;
+              }
+            }
+
+            try {
+              const narrativeResponse = await fetch('/examples/output/narrative.txt');
+              if (!narrativeResponse.ok) {
+                throw new Error(`Narrative not found: ${narrativeResponse.status}`);
+              }
+              narrativeText = await narrativeResponse.text();
+            } catch (e) {
+              try {
+                const narrativeResponse = await fetch('./examples/output/narrative.txt');
+                if (!narrativeResponse.ok) {
+                  throw new Error(`Narrative not found: ${narrativeResponse.status}`);
+                }
+                narrativeText = await narrativeResponse.text();
+              } catch (e2) {
+                console.warn('File narrative.txt non trovato!');
+              }
+            }
+
+            setQuest(metadata.quest_data);
+            setNarrative(narrativeText);
+
+            if (savedState) {
+              setState(savedState);
+            } else {
+              setState(s => ({ ...s, location: metadata.quest_data.initial_location }));
+            }
+
+          } catch (err) {
+            console.error('Errore nel caricamento:', err);
+            setError(err.message);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        loadData();
+      }, []);
+
+      useEffect(() => {
+        if (quest && state.location) {
+          sessionStorage.setItem('quest_state', JSON.stringify(state));
+
+          const achieved = quest.goal_conditions.every(condition => {
+            if (condition.startsWith('at ')) {
+              const target = condition.substring(3);
+              return state.location === target;
+            }
+            if (condition.startsWith('defeated ')) {
+              const enemy = condition.substring(9);
+              return state.defeated.includes(enemy);
+            }
+            return false;
+          });
+          setCompleted(achieved);
+        }
+      }, [state, quest]);
+
+      if (loading) {
+        return (
+          <div className="max-w-4xl mx-auto p-4">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-lg">Caricamento...</div>
+            </div>
+          </div>
+        );
+      }
+
+      if (error) {
+        return (
+          <div className="max-w-4xl mx-auto p-4">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <strong>Errore:</strong> {error}
+              <div className="mt-2 text-sm">
+                Assicurati che i file metadata.json e narrative.txt esistano in examples/output/
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (!quest || !state.location) {
+        return (
+          <div className="max-w-4xl mx-auto p-4">
+            <div className="text-center">Dati non disponibili</div>
+          </div>
+        );
+      }
+
+      const moves = quest.connections
+        .flatMap(([src, dst]) => {
+          if (src === state.location) return [dst];
+          if (dst === state.location) return [src];
+          return [];
+        });
+
+
+      const obstacle = quest.obstacles[state.location];
+      const isDefeated = obstacle && state.defeated.includes(obstacle);
+
+      const progressCount = quest.goal_conditions.reduce((count, condition) => {
+        if (condition.startsWith('at ')) {
+          // condition can be "at location" or "at hero location".
+          const parts = condition.split(' ');
+          const target = parts[parts.length - 1];
+          return count + (state.location === target ? 1 : 0);
+        }
+        if (condition.startsWith('defeated ')) {
+          const enemy = condition.split(' ').pop();
+          return count + (state.defeated.includes(enemy) ? 1 : 0);
+        }
+        return count;
+      }, 0) / (quest.goal_conditions.length || 1);
+
+      const moveTo = dest => {
+        setState(s => ({
+          ...s,
+          location: dest,
+          log: [...s.log, {
+            time: new Date().toLocaleTimeString(),
+            text: `Moved to ${dest}`
+          }].slice(-10) // Mantieni solo gli ultimi 10 log
+        }));
+      };
+
+      const defeat = ob => {
+        if (!state.defeated.includes(ob)) {
+          setState(s => ({
+            ...s,
+            defeated: [...s.defeated, ob],
+            log: [...s.log, {
+              time: new Date().toLocaleTimeString(),
+              text: `Defeated ${ob}`
+            }].slice(-10)
+          }));
+        }
+      };
+
+      const restart = () => {
+        sessionStorage.removeItem('quest_state');
+        setState({ location: quest.initial_location, defeated: [], log: [] });
+        setCompleted(false);
+      };
+
+      return (
+        <div className="max-w-4xl mx-auto p-4 space-y-4">
+          <h1 className="text-3xl font-bold text-center text-blue-800">QuestMaster Interactive Story</h1>
+
+            <div className="bg-blue-50 p-3 rounded">
+            <div className="text-sm text-blue-700 mb-1">
+              Quest Progress ({Math.floor(progressCount * 100)}% completato)
+            </div>
+            <ProgressBar progress={progressCount} />
+            <div className="text-xs text-blue-600 mt-1">
+              Obiettivi: {quest.goal_conditions.join(', ')}
+            </div>
+            <div className="text-xs text-green-600 mt-1">
+              Completati: {quest.goal_conditions.filter(condition => {
+                if (condition.startsWith('at ')) {
+                  return state.location === condition.substring(3);
+                }
+                if (condition.startsWith('defeated ')) {
+                  return state.defeated.includes(condition.substring(9));
+                }
+                return false;
+              }).length} / {quest.goal_conditions.length}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Narrative</h3>
+                <NarrativePanel text={narrative} />
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Action Log</h3>
+                <div className="bg-gray-50 p-3 rounded">
+                  <ActionLog log={state.log} />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-white border-2 border-gray-200 rounded-lg p-4 min-h-64">
+                <LocationHeader location={state.location} />
+
+                {completed ? (
+                  <div className="p-4 bg-green-100 border border-green-400 text-green-700 rounded text-center">
+                    <div className="text-xl font-bold">🎉 Quest Completed! 🎉</div>
+                    <div className="mt-2">Congratulazioni! Hai completato la tua missione.</div>
+                  </div>
+                ) : (
+                  <div>
+                <div className="mb-4 text-gray-600">
+                  <div>Posizione corrente: <strong>{state.location}</strong></div>
+                  {state.defeated.length > 0 && (
+                    <div className="text-sm mt-1">
+                      Nemici sconfitti: {state.defeated.join(', ')}
+                    </div>
+                  )}
+                  <div className="mt-2">Cosa vuoi fare?</div>
+                </div>
+                    <ChoicesList
+                      moves={moves}
+                      obstacle={!isDefeated ? obstacle : null}
+                      onMove={moveTo}
+                      onDefeat={defeat}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center space-x-2">
+            <button
+              className="px-4 py-2 text-sm bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors"
+              onClick={() => setMusicOn(!musicOn)}
+            >
+              {musicOn ? '🔈 Mute Music' : '🔊 Play Music'}
+            </button>
+            <button
+              className="px-4 py-2 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              onClick={restart}
+            >
+              🔄 Restart Quest
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

@@ -29,10 +29,11 @@ class LLMConfig:
     DOMAIN_TEMP: float = 0.3
     DOMAIN_MAX_TOKENS: int = 1024
 
-    # HTML generator config
-    HTML_MODEL: str = "llama3:8b"
-    HTML_TEMP: float = 0.2
-    HTML_MAX_TOKENS: int = 2048
+
+    HTML_MODEL = "tngtech/deepseek-r1t2-chimera:free"
+    HTML_TEMP = 0.2
+    HTML_MAX_TOKENS = 4096
+    OPENROUTER_API_KEY: str = "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"  # Replace with your actual OpenRouter API key
 
 
 # Singleton instance
