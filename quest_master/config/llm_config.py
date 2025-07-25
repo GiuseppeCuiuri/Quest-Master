@@ -29,6 +29,11 @@ class LLMConfig:
     DOMAIN_TEMP: float = 0.3
     DOMAIN_MAX_TOKENS: int = 1024
 
+    # HTML generator config
+    HTML_MODEL: str = "llama3:8b"
+    HTML_TEMP: float = 0.2
+    HTML_MAX_TOKENS: int = 2048
+
 
 # Singleton instance
 llm_config = LLMConfig()
