@@ -3,7 +3,6 @@ import socketserver
 import argparse
 from pathlib import Path
 
-PORT = 8000
 DEFAULT_PORT = 8000
 
 # Serve files relative to repository root
@@ -19,8 +18,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return str(HERE / path.lstrip('/'))
 
 if __name__ == '__main__':
-    with socketserver.TCPServer(('', PORT), Handler) as httpd:
-        print(f"Serving on http://localhost:{PORT}")
     parser = argparse.ArgumentParser(description="Simple HTTP server for the demo frontend")
     parser.add_argument('--port', type=int, default=DEFAULT_PORT, help='Port to listen on')
     args = parser.parse_args()
