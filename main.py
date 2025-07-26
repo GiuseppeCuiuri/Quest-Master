@@ -1,46 +1,34 @@
-from __future__ import annotations
-import json
-from pathlib import Path
-import argparse
-
-from quest_master.parsers.lore_parser import LoreParser
-from quest_master.pipeline import QuestPipeline
 from quest_master.langgraph_workflow import run_flow
-
-
-def legacy_run(lore_file: Path, output_dir: Path):
-    parser = LoreParser()
-    info = parser.extract_informations(lore_file)
-    quest_description = info["quest_description"]
-    branching_factor = info.get("branching_factor")
-    depth_constraints = info.get("depth_constraints")
-
-    pipeline = QuestPipeline(output_dir=output_dir)
-    results = pipeline.process(
-        quest_description,
-        branching_factor=branching_factor,
-        depth_constraints=depth_constraints,
-    )
-    print(json.dumps(results["validation"], indent=2))
-
-
-def main():
-    argp = argparse.ArgumentParser(description="QuestMaster runner")
-    argp.add_argument("--lore", default="lore_document.txt", help="Lore document path")
-    argp.add_argument("--output", default="examples/output", help="Output directory")
-    argp.add_argument("--langgraph", action="store_true", help="Use LangGraph workflow")
-    args = argp.parse_args()
-
-    lore_path = Path(args.lore)
-    out_dir = Path(args.output)
-
-    if args.langgraph:
-        result = run_flow(str(lore_path), str(out_dir))
-        summary = {"status": "success" if result.success else "failure", "iterations": result.iterations}
-        print(json.dumps(summary, indent=2))
-    else:
-        legacy_run(lore_path, out_dir)
-
+from pathlib import Path
+import json
 
 if __name__ == "__main__":
-    main()
+    # Percorso predefinito al file lore e alla cartella di output
+    lore_path = "lore_document.txt"
+    output_path = Path("examples/output")
+
+    # Esegui il flusso LangGraph
+    result = run_flow("lore_document.txt", "examples/output")
+
+    # Stampa riepilogo esecuzione
+    print("✅ LangGraph flow completed.")
+
+    # Gestisci sia il caso di oggetto GraphState che di dizionario
+    if hasattr(result, 'success'):
+        # result è un oggetto GraphState
+        success = result.success
+        iterations = result.iterations
+        result_dict = result.__dict__
+    else:
+        # result è un dizionario
+        success = result.get('success', False)
+        iterations = result.get('iterations', 0)
+        result_dict = result
+
+    print("Status:", "SUCCESS" if success else "FAILURE")
+    print("Iterations:", iterations)
+
+    # (Facoltativo) Salva lo stato finale completo per debug
+    output_path.mkdir(parents=True, exist_ok=True)
+    with open(output_path / "final_state.json", "w", encoding="utf-8") as f:
+        json.dump(result_dict, f, indent=2, default=str)

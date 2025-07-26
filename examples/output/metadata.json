@@ -2,30 +2,28 @@
   "quest_data": {
     "locations": [
       "start",
-      "loc_1",
-      "loc_2",
-      "loc_3",
-      "loc_4",
-      "loc_5",
-      "loc_6",
-      "loc_7",
+      "elyria's_hollow",
+      "kaelinor's_spire_of_whispers",
+      "the_shadowed_spires_of_erebo",
+      "the_forgotten_citadel_of_xeridia",
+      "the_whispering_warrens_of_zha'thik",
+      "the_celestial_cisterns_of_aethereia",
       "crystal_caverns",
       "start_branch1",
       "start_branch2",
-      "start_branch3",
-      "loc_1_branch1",
-      "loc_1_branch2",
-      "loc_1_branch3",
-      "loc_2_branch1",
-      "loc_3_branch1",
-      "loc_4_branch1",
-      "loc_5_branch1",
-      "loc_5_branch2",
-      "loc_6_branch1",
-      "loc_6_branch2",
-      "loc_6_branch3",
-      "loc_7_branch1",
-      "loc_7_branch2"
+      "elyria's_hollow_branch1",
+      "elyria's_hollow_branch2",
+      "elyria's_hollow_branch3",
+      "kaelinor's_spire_of_whispers_branch1",
+      "kaelinor's_spire_of_whispers_branch2",
+      "kaelinor's_spire_of_whispers_branch3",
+      "the_shadowed_spires_of_erebo_branch1",
+      "the_shadowed_spires_of_erebo_branch2",
+      "the_shadowed_spires_of_erebo_branch3",
+      "the_forgotten_citadel_of_xeridia_branch1",
+      "the_forgotten_citadel_of_xeridia_branch2",
+      "the_whispering_warrens_of_zha'thik_branch1",
+      "the_celestial_cisterns_of_aethereia_branch1"
     ],
     "items": [],
     "obstacles": {
@@ -34,7 +32,7 @@
     "connections": [
       [
         "start",
-        "loc_1"
+        "elyria's_hollow"
       ],
       [
         "start",
@@ -45,91 +43,83 @@
         "start_branch2"
       ],
       [
-        "start",
-        "start_branch3"
+        "elyria's_hollow",
+        "kaelinor's_spire_of_whispers"
       ],
       [
-        "loc_1",
-        "loc_2"
+        "elyria's_hollow",
+        "elyria's_hollow_branch1"
       ],
       [
-        "loc_1",
-        "loc_1_branch1"
+        "elyria's_hollow",
+        "elyria's_hollow_branch2"
       ],
       [
-        "loc_1",
-        "loc_1_branch2"
+        "elyria's_hollow",
+        "elyria's_hollow_branch3"
       ],
       [
-        "loc_1",
-        "loc_1_branch3"
+        "kaelinor's_spire_of_whispers",
+        "the_shadowed_spires_of_erebo"
       ],
       [
-        "loc_2",
-        "loc_3"
+        "kaelinor's_spire_of_whispers",
+        "kaelinor's_spire_of_whispers_branch1"
       ],
       [
-        "loc_2",
-        "loc_2_branch1"
+        "kaelinor's_spire_of_whispers",
+        "kaelinor's_spire_of_whispers_branch2"
       ],
       [
-        "loc_3",
-        "loc_4"
+        "kaelinor's_spire_of_whispers",
+        "kaelinor's_spire_of_whispers_branch3"
       ],
       [
-        "loc_3",
-        "loc_3_branch1"
+        "the_shadowed_spires_of_erebo",
+        "the_forgotten_citadel_of_xeridia"
       ],
       [
-        "loc_4",
-        "loc_5"
+        "the_shadowed_spires_of_erebo",
+        "the_shadowed_spires_of_erebo_branch1"
       ],
       [
-        "loc_4",
-        "loc_4_branch1"
+        "the_shadowed_spires_of_erebo",
+        "the_shadowed_spires_of_erebo_branch2"
       ],
       [
-        "loc_5",
-        "loc_6"
+        "the_shadowed_spires_of_erebo",
+        "the_shadowed_spires_of_erebo_branch3"
       ],
       [
-        "loc_5",
-        "loc_5_branch1"
+        "the_forgotten_citadel_of_xeridia",
+        "the_whispering_warrens_of_zha'thik"
       ],
       [
-        "loc_5",
-        "loc_5_branch2"
+        "the_forgotten_citadel_of_xeridia",
+        "the_forgotten_citadel_of_xeridia_branch1"
       ],
       [
-        "loc_6",
-        "loc_7"
+        "the_forgotten_citadel_of_xeridia",
+        "the_forgotten_citadel_of_xeridia_branch2"
       ],
       [
-        "loc_6",
-        "loc_6_branch1"
+        "the_whispering_warrens_of_zha'thik",
+        "the_celestial_cisterns_of_aethereia"
       ],
       [
-        "loc_6",
-        "loc_6_branch2"
+        "the_whispering_warrens_of_zha'thik",
+        "the_whispering_warrens_of_zha'thik_branch1"
       ],
       [
-        "loc_6",
-        "loc_6_branch3"
-      ],
-      [
-        "loc_7",
+        "the_celestial_cisterns_of_aethereia",
         "crystal_caverns"
       ],
       [
-        "loc_7",
-        "loc_7_branch1"
+        "the_celestial_cisterns_of_aethereia",
+        "the_celestial_cisterns_of_aethereia_branch1"
       ],
       [
-        "loc_7",
-        "loc_7_branch2"
-      ],
-      [
-        "loc_1",
+        "elyria's_hollow",
         "start"
       ],
       [
@@ -141,88 +131,80 @@
         "start"
       ],
       [
-        "start_branch3",
-        "start"
+        "kaelinor's_spire_of_whispers",
+        "elyria's_hollow"
       ],
       [
-        "loc_2",
-        "loc_1"
+        "elyria's_hollow_branch1",
+        "elyria's_hollow"
       ],
       [
-        "loc_1_branch1",
-        "loc_1"
+        "elyria's_hollow_branch2",
+        "elyria's_hollow"
       ],
       [
-        "loc_1_branch2",
-        "loc_1"
+        "elyria's_hollow_branch3",
+        "elyria's_hollow"
       ],
       [
-        "loc_1_branch3",
-        "loc_1"
+        "the_shadowed_spires_of_erebo",
+        "kaelinor's_spire_of_whispers"
       ],
       [
-        "loc_3",
-        "loc_2"
+        "kaelinor's_spire_of_whispers_branch1",
+        "kaelinor's_spire_of_whispers"
       ],
       [
-        "loc_2_branch1",
-        "loc_2"
+        "kaelinor's_spire_of_whispers_branch2",
+        "kaelinor's_spire_of_whispers"
       ],
       [
-        "loc_4",
-        "loc_3"
+        "kaelinor's_spire_of_whispers_branch3",
+        "kaelinor's_spire_of_whispers"
       ],
       [
-        "loc_3_branch1",
-        "loc_3"
+        "the_forgotten_citadel_of_xeridia",
+        "the_shadowed_spires_of_erebo"
       ],
       [
-        "loc_5",
-        "loc_4"
+        "the_shadowed_spires_of_erebo_branch1",
+        "the_shadowed_spires_of_erebo"
       ],
       [
-        "loc_4_branch1",
-        "loc_4"
+        "the_shadowed_spires_of_erebo_branch2",
+        "the_shadowed_spires_of_erebo"
       ],
       [
-        "loc_6",
-        "loc_5"
+        "the_shadowed_spires_of_erebo_branch3",
+        "the_shadowed_spires_of_erebo"
       ],
       [
-        "loc_5_branch1",
-        "loc_5"
+        "the_whispering_warrens_of_zha'thik",
+        "the_forgotten_citadel_of_xeridia"
       ],
       [
-        "loc_5_branch2",
-        "loc_5"
+        "the_forgotten_citadel_of_xeridia_branch1",
+        "the_forgotten_citadel_of_xeridia"
       ],
       [
-        "loc_7",
-        "loc_6"
+        "the_forgotten_citadel_of_xeridia_branch2",
+        "the_forgotten_citadel_of_xeridia"
       ],
       [
-        "loc_6_branch1",
-        "loc_6"
+        "the_celestial_cisterns_of_aethereia",
+        "the_whispering_warrens_of_zha'thik"
       ],
       [
-        "loc_6_branch2",
-        "loc_6"
-      ],
-      [
-        "loc_6_branch3",
-        "loc_6"
+        "the_whispering_warrens_of_zha'thik_branch1",
+        "the_whispering_warrens_of_zha'thik"
       ],
       [
         "crystal_caverns",
-        "loc_7"
+        "the_celestial_cisterns_of_aethereia"
       ],
       [
-        "loc_7_branch1",
-        "loc_7"
-      ],
-      [
-        "loc_7_branch2",
-        "loc_7"
+        "the_celestial_cisterns_of_aethereia_branch1",
+        "the_celestial_cisterns_of_aethereia"
       ]
     ],
     "initial_location": "start",
@@ -236,7 +218,7 @@
     },
     "depth_constraints": {
       "min": 3,
-      "max": 8
+      "max": 7
     }
   },
   "branching_factor": {
@@ -247,8 +229,7 @@
     "min": 3,
     "max": 8
   },
-  "validation": {
-    "is_valid": true,
-    "error": null
-  }
+  "iterations": 0,
+  "status": "success",
+  "validation_error": null
 }

@@ -72,10 +72,10 @@ class QuestParser:
         return min_b, max_b
 
     def enhance_quest_data(
-        self,
-        simple_data: SimpleQuestData,
-        branching_factor: Dict[str, int] | None = None,
-        depth_constraints: Dict[str, int] | None = None,
+            self,
+            simple_data: SimpleQuestData,
+            branching_factor: Dict[str, int] | None = None,
+            depth_constraints: Dict[str, int] | None = None,
     ) -> EnhancedQuestData:
         """Enhance parsed quest data: select dynamic depth and branching, build graph, preserve solvability."""
         # Select random depth
@@ -87,7 +87,9 @@ class QuestParser:
         obs_key = _normalize(simple_data.obstacle_key) if simple_data.obstacle_key else None
 
         # Build main path locations
-        locations = ["start"] + [f"loc_{i+1}" for i in range(depth - 1)] + [dest_norm]
+        theme = simple_data.destination + " " + (simple_data.obstacle or "")
+        main_path_names = self._generate_fantasy_location_names(depth - 1, theme)
+        locations = ["start"] + [_normalize(name) for name in main_path_names] + [dest_norm]
 
         # Items and obstacles
         items = [item_norm] if item_norm else []
@@ -109,7 +111,7 @@ class QuestParser:
 
             # Generate side branches
             for j in range(extra):
-                side = f"{loc}_branch{j+1}"
+                side = f"{loc}_branch{j + 1}"
                 if side not in locations:
                     locations.append(side)
                 connections.append((loc, side))
@@ -130,3 +132,20 @@ class QuestParser:
             depth_constraints={"min": 1 if not depth_constraints else depth_constraints.get("min"),
                                "max": depth},
         )
+
+    def _generate_fantasy_location_names(self, count: int, theme_hint: str) -> list[str]:
+        prompt = f"""
+    Generate {count} unique fantasy location names that could exist in a world where:
+    "{theme_hint}"
+
+    Rules:
+    - Names must fit the tone (e.g. mystical, eerie, ancient).
+    - Avoid real-world objects or modern references.
+    - Output as a JSON list of strings.
+        """
+        response = self.llm.invoke(prompt)
+        import json, re
+        match = re.search(r'\[.*\]', response.content, re.DOTALL)
+        return json.loads(match.group(0)) if match else [f"loc_{i + 1}" for i in range(count)]
+
+

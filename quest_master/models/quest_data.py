@@ -9,6 +9,7 @@ class SimpleQuestData(BaseModel):
     obstacle: str = Field(..., description="Ostacolo principale")
     obstacle_key: str = Field(..., description="Chiave dell'ostacolo")
 
+
 class EnhancedQuestData(BaseModel):
     """Modello avanzato per PDDL completo"""
     locations: List[str] = Field(default_factory=list, description="Tutti i luoghi")

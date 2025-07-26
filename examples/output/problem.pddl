@@ -5,30 +5,28 @@
   (:objects ; declare objects
     hero - agent ; the hero
     start - location ; location
-    loc_1 - location ; location
-    loc_2 - location ; location
-    loc_3 - location ; location
-    loc_4 - location ; location
-    loc_5 - location ; location
-    loc_6 - location ; location
-    loc_7 - location ; location
+    elyria's_hollow - location ; location
+    kaelinor's_spire_of_whispers - location ; location
+    the_shadowed_spires_of_erebo - location ; location
+    the_forgotten_citadel_of_xeridia - location ; location
+    the_whispering_warrens_of_zha'thik - location ; location
+    the_celestial_cisterns_of_aethereia - location ; location
     crystal_caverns - location ; location
     start_branch1 - location ; location
     start_branch2 - location ; location
-    start_branch3 - location ; location
-    loc_1_branch1 - location ; location
-    loc_1_branch2 - location ; location
-    loc_1_branch3 - location ; location
-    loc_2_branch1 - location ; location
-    loc_3_branch1 - location ; location
-    loc_4_branch1 - location ; location
-    loc_5_branch1 - location ; location
-    loc_5_branch2 - location ; location
-    loc_6_branch1 - location ; location
-    loc_6_branch2 - location ; location
-    loc_6_branch3 - location ; location
-    loc_7_branch1 - location ; location
-    loc_7_branch2 - location ; location
+    elyria's_hollow_branch1 - location ; location
+    elyria's_hollow_branch2 - location ; location
+    elyria's_hollow_branch3 - location ; location
+    kaelinor's_spire_of_whispers_branch1 - location ; location
+    kaelinor's_spire_of_whispers_branch2 - location ; location
+    kaelinor's_spire_of_whispers_branch3 - location ; location
+    the_shadowed_spires_of_erebo_branch1 - location ; location
+    the_shadowed_spires_of_erebo_branch2 - location ; location
+    the_shadowed_spires_of_erebo_branch3 - location ; location
+    the_forgotten_citadel_of_xeridia_branch1 - location ; location
+    the_forgotten_citadel_of_xeridia_branch2 - location ; location
+    the_whispering_warrens_of_zha'thik_branch1 - location ; location
+    the_celestial_cisterns_of_aethereia_branch1 - location ; location
     golem - obstacle ; obstacle
   ) ; end objects
 
@@ -36,105 +34,97 @@
     (at hero start) ; hero starting position
     (alive hero) ; hero is alive
     (= (current-step) 0) ; step counter start
-    (= (max-depth) 8) ; maximum depth
+    (= (max-depth) 7) ; maximum depth
     (= (branch-limit start) 4) ; branch limit
     (= (actions-used start) 0) ; actions used
-    (= (branch-limit loc_1) 4) ; branch limit
-    (= (actions-used loc_1) 0) ; actions used
-    (= (branch-limit loc_2) 4) ; branch limit
-    (= (actions-used loc_2) 0) ; actions used
-    (= (branch-limit loc_3) 4) ; branch limit
-    (= (actions-used loc_3) 0) ; actions used
-    (= (branch-limit loc_4) 4) ; branch limit
-    (= (actions-used loc_4) 0) ; actions used
-    (= (branch-limit loc_5) 4) ; branch limit
-    (= (actions-used loc_5) 0) ; actions used
-    (= (branch-limit loc_6) 4) ; branch limit
-    (= (actions-used loc_6) 0) ; actions used
-    (= (branch-limit loc_7) 4) ; branch limit
-    (= (actions-used loc_7) 0) ; actions used
+    (= (branch-limit elyria's_hollow) 4) ; branch limit
+    (= (actions-used elyria's_hollow) 0) ; actions used
+    (= (branch-limit kaelinor's_spire_of_whispers) 4) ; branch limit
+    (= (actions-used kaelinor's_spire_of_whispers) 0) ; actions used
+    (= (branch-limit the_shadowed_spires_of_erebo) 4) ; branch limit
+    (= (actions-used the_shadowed_spires_of_erebo) 0) ; actions used
+    (= (branch-limit the_forgotten_citadel_of_xeridia) 4) ; branch limit
+    (= (actions-used the_forgotten_citadel_of_xeridia) 0) ; actions used
+    (= (branch-limit the_whispering_warrens_of_zha'thik) 4) ; branch limit
+    (= (actions-used the_whispering_warrens_of_zha'thik) 0) ; actions used
+    (= (branch-limit the_celestial_cisterns_of_aethereia) 4) ; branch limit
+    (= (actions-used the_celestial_cisterns_of_aethereia) 0) ; actions used
     (= (branch-limit crystal_caverns) 4) ; branch limit
     (= (actions-used crystal_caverns) 0) ; actions used
     (= (branch-limit start_branch1) 4) ; branch limit
     (= (actions-used start_branch1) 0) ; actions used
     (= (branch-limit start_branch2) 4) ; branch limit
     (= (actions-used start_branch2) 0) ; actions used
-    (= (branch-limit start_branch3) 4) ; branch limit
-    (= (actions-used start_branch3) 0) ; actions used
-    (= (branch-limit loc_1_branch1) 4) ; branch limit
-    (= (actions-used loc_1_branch1) 0) ; actions used
-    (= (branch-limit loc_1_branch2) 4) ; branch limit
-    (= (actions-used loc_1_branch2) 0) ; actions used
-    (= (branch-limit loc_1_branch3) 4) ; branch limit
-    (= (actions-used loc_1_branch3) 0) ; actions used
-    (= (branch-limit loc_2_branch1) 4) ; branch limit
-    (= (actions-used loc_2_branch1) 0) ; actions used
-    (= (branch-limit loc_3_branch1) 4) ; branch limit
-    (= (actions-used loc_3_branch1) 0) ; actions used
-    (= (branch-limit loc_4_branch1) 4) ; branch limit
-    (= (actions-used loc_4_branch1) 0) ; actions used
-    (= (branch-limit loc_5_branch1) 4) ; branch limit
-    (= (actions-used loc_5_branch1) 0) ; actions used
-    (= (branch-limit loc_5_branch2) 4) ; branch limit
-    (= (actions-used loc_5_branch2) 0) ; actions used
-    (= (branch-limit loc_6_branch1) 4) ; branch limit
-    (= (actions-used loc_6_branch1) 0) ; actions used
-    (= (branch-limit loc_6_branch2) 4) ; branch limit
-    (= (actions-used loc_6_branch2) 0) ; actions used
-    (= (branch-limit loc_6_branch3) 4) ; branch limit
-    (= (actions-used loc_6_branch3) 0) ; actions used
-    (= (branch-limit loc_7_branch1) 4) ; branch limit
-    (= (actions-used loc_7_branch1) 0) ; actions used
-    (= (branch-limit loc_7_branch2) 4) ; branch limit
-    (= (actions-used loc_7_branch2) 0) ; actions used
-    (connected start loc_1) ; connection forward
-    (connected loc_1 start) ; connection backward
+    (= (branch-limit elyria's_hollow_branch1) 4) ; branch limit
+    (= (actions-used elyria's_hollow_branch1) 0) ; actions used
+    (= (branch-limit elyria's_hollow_branch2) 4) ; branch limit
+    (= (actions-used elyria's_hollow_branch2) 0) ; actions used
+    (= (branch-limit elyria's_hollow_branch3) 4) ; branch limit
+    (= (actions-used elyria's_hollow_branch3) 0) ; actions used
+    (= (branch-limit kaelinor's_spire_of_whispers_branch1) 4) ; branch limit
+    (= (actions-used kaelinor's_spire_of_whispers_branch1) 0) ; actions used
+    (= (branch-limit kaelinor's_spire_of_whispers_branch2) 4) ; branch limit
+    (= (actions-used kaelinor's_spire_of_whispers_branch2) 0) ; actions used
+    (= (branch-limit kaelinor's_spire_of_whispers_branch3) 4) ; branch limit
+    (= (actions-used kaelinor's_spire_of_whispers_branch3) 0) ; actions used
+    (= (branch-limit the_shadowed_spires_of_erebo_branch1) 4) ; branch limit
+    (= (actions-used the_shadowed_spires_of_erebo_branch1) 0) ; actions used
+    (= (branch-limit the_shadowed_spires_of_erebo_branch2) 4) ; branch limit
+    (= (actions-used the_shadowed_spires_of_erebo_branch2) 0) ; actions used
+    (= (branch-limit the_shadowed_spires_of_erebo_branch3) 4) ; branch limit
+    (= (actions-used the_shadowed_spires_of_erebo_branch3) 0) ; actions used
+    (= (branch-limit the_forgotten_citadel_of_xeridia_branch1) 4) ; branch limit
+    (= (actions-used the_forgotten_citadel_of_xeridia_branch1) 0) ; actions used
+    (= (branch-limit the_forgotten_citadel_of_xeridia_branch2) 4) ; branch limit
+    (= (actions-used the_forgotten_citadel_of_xeridia_branch2) 0) ; actions used
+    (= (branch-limit the_whispering_warrens_of_zha'thik_branch1) 4) ; branch limit
+    (= (actions-used the_whispering_warrens_of_zha'thik_branch1) 0) ; actions used
+    (= (branch-limit the_celestial_cisterns_of_aethereia_branch1) 4) ; branch limit
+    (= (actions-used the_celestial_cisterns_of_aethereia_branch1) 0) ; actions used
+    (connected start elyria's_hollow) ; connection forward
+    (connected elyria's_hollow start) ; connection backward
     (connected start start_branch1) ; connection forward
     (connected start_branch1 start) ; connection backward
     (connected start start_branch2) ; connection forward
     (connected start_branch2 start) ; connection backward
-    (connected start start_branch3) ; connection forward
-    (connected start_branch3 start) ; connection backward
-    (connected loc_1 loc_2) ; connection forward
-    (connected loc_2 loc_1) ; connection backward
-    (connected loc_1 loc_1_branch1) ; connection forward
-    (connected loc_1_branch1 loc_1) ; connection backward
-    (connected loc_1 loc_1_branch2) ; connection forward
-    (connected loc_1_branch2 loc_1) ; connection backward
-    (connected loc_1 loc_1_branch3) ; connection forward
-    (connected loc_1_branch3 loc_1) ; connection backward
-    (connected loc_2 loc_3) ; connection forward
-    (connected loc_3 loc_2) ; connection backward
-    (connected loc_2 loc_2_branch1) ; connection forward
-    (connected loc_2_branch1 loc_2) ; connection backward
-    (connected loc_3 loc_4) ; connection forward
-    (connected loc_4 loc_3) ; connection backward
-    (connected loc_3 loc_3_branch1) ; connection forward
-    (connected loc_3_branch1 loc_3) ; connection backward
-    (connected loc_4 loc_5) ; connection forward
-    (connected loc_5 loc_4) ; connection backward
-    (connected loc_4 loc_4_branch1) ; connection forward
-    (connected loc_4_branch1 loc_4) ; connection backward
-    (connected loc_5 loc_6) ; connection forward
-    (connected loc_6 loc_5) ; connection backward
-    (connected loc_5 loc_5_branch1) ; connection forward
-    (connected loc_5_branch1 loc_5) ; connection backward
-    (connected loc_5 loc_5_branch2) ; connection forward
-    (connected loc_5_branch2 loc_5) ; connection backward
-    (connected loc_6 loc_7) ; connection forward
-    (connected loc_7 loc_6) ; connection backward
-    (connected loc_6 loc_6_branch1) ; connection forward
-    (connected loc_6_branch1 loc_6) ; connection backward
-    (connected loc_6 loc_6_branch2) ; connection forward
-    (connected loc_6_branch2 loc_6) ; connection backward
-    (connected loc_6 loc_6_branch3) ; connection forward
-    (connected loc_6_branch3 loc_6) ; connection backward
-    (connected loc_7 crystal_caverns) ; connection forward
-    (connected crystal_caverns loc_7) ; connection backward
-    (connected loc_7 loc_7_branch1) ; connection forward
-    (connected loc_7_branch1 loc_7) ; connection backward
-    (connected loc_7 loc_7_branch2) ; connection forward
-    (connected loc_7_branch2 loc_7) ; connection backward
+    (connected elyria's_hollow kaelinor's_spire_of_whispers) ; connection forward
+    (connected kaelinor's_spire_of_whispers elyria's_hollow) ; connection backward
+    (connected elyria's_hollow elyria's_hollow_branch1) ; connection forward
+    (connected elyria's_hollow_branch1 elyria's_hollow) ; connection backward
+    (connected elyria's_hollow elyria's_hollow_branch2) ; connection forward
+    (connected elyria's_hollow_branch2 elyria's_hollow) ; connection backward
+    (connected elyria's_hollow elyria's_hollow_branch3) ; connection forward
+    (connected elyria's_hollow_branch3 elyria's_hollow) ; connection backward
+    (connected kaelinor's_spire_of_whispers the_shadowed_spires_of_erebo) ; connection forward
+    (connected the_shadowed_spires_of_erebo kaelinor's_spire_of_whispers) ; connection backward
+    (connected kaelinor's_spire_of_whispers kaelinor's_spire_of_whispers_branch1) ; connection forward
+    (connected kaelinor's_spire_of_whispers_branch1 kaelinor's_spire_of_whispers) ; connection backward
+    (connected kaelinor's_spire_of_whispers kaelinor's_spire_of_whispers_branch2) ; connection forward
+    (connected kaelinor's_spire_of_whispers_branch2 kaelinor's_spire_of_whispers) ; connection backward
+    (connected kaelinor's_spire_of_whispers kaelinor's_spire_of_whispers_branch3) ; connection forward
+    (connected kaelinor's_spire_of_whispers_branch3 kaelinor's_spire_of_whispers) ; connection backward
+    (connected the_shadowed_spires_of_erebo the_forgotten_citadel_of_xeridia) ; connection forward
+    (connected the_forgotten_citadel_of_xeridia the_shadowed_spires_of_erebo) ; connection backward
+    (connected the_shadowed_spires_of_erebo the_shadowed_spires_of_erebo_branch1) ; connection forward
+    (connected the_shadowed_spires_of_erebo_branch1 the_shadowed_spires_of_erebo) ; connection backward
+    (connected the_shadowed_spires_of_erebo the_shadowed_spires_of_erebo_branch2) ; connection forward
+    (connected the_shadowed_spires_of_erebo_branch2 the_shadowed_spires_of_erebo) ; connection backward
+    (connected the_shadowed_spires_of_erebo the_shadowed_spires_of_erebo_branch3) ; connection forward
+    (connected the_shadowed_spires_of_erebo_branch3 the_shadowed_spires_of_erebo) ; connection backward
+    (connected the_forgotten_citadel_of_xeridia the_whispering_warrens_of_zha'thik) ; connection forward
+    (connected the_whispering_warrens_of_zha'thik the_forgotten_citadel_of_xeridia) ; connection backward
+    (connected the_forgotten_citadel_of_xeridia the_forgotten_citadel_of_xeridia_branch1) ; connection forward
+    (connected the_forgotten_citadel_of_xeridia_branch1 the_forgotten_citadel_of_xeridia) ; connection backward
+    (connected the_forgotten_citadel_of_xeridia the_forgotten_citadel_of_xeridia_branch2) ; connection forward
+    (connected the_forgotten_citadel_of_xeridia_branch2 the_forgotten_citadel_of_xeridia) ; connection backward
+    (connected the_whispering_warrens_of_zha'thik the_celestial_cisterns_of_aethereia) ; connection forward
+    (connected the_celestial_cisterns_of_aethereia the_whispering_warrens_of_zha'thik) ; connection backward
+    (connected the_whispering_warrens_of_zha'thik the_whispering_warrens_of_zha'thik_branch1) ; connection forward
+    (connected the_whispering_warrens_of_zha'thik_branch1 the_whispering_warrens_of_zha'thik) ; connection backward
+    (connected the_celestial_cisterns_of_aethereia crystal_caverns) ; connection forward
+    (connected crystal_caverns the_celestial_cisterns_of_aethereia) ; connection backward
+    (connected the_celestial_cisterns_of_aethereia the_celestial_cisterns_of_aethereia_branch1) ; connection forward
+    (connected the_celestial_cisterns_of_aethereia_branch1 the_celestial_cisterns_of_aethereia) ; connection backward
     (guarded_by crystal_caverns golem) ; obstacle guarding
   ) ; end init
 

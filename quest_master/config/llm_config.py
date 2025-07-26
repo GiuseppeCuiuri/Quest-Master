@@ -33,7 +33,7 @@ class LLMConfig:
     HTML_MODEL = "tngtech/deepseek-r1t2-chimera:free"
     HTML_TEMP = 0.2
     HTML_MAX_TOKENS = 4096
-    OPENROUTER_API_KEY: str = "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"  # Replace with your actual OpenRouter API key
+    OPENROUTER_API_KEY: str = "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"  # Replace with your actual OpenRouter API key
 
 
 # Singleton instance

@@ -4,17 +4,17 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, Dict
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph
 
-from .parsers.lore_parser import LoreParser
-from .parsers.quest_parser import QuestParser
-from .generators.pddl_domain import PDDLDomainGenerator
-from .generators.pddl_problem import PDDLProblemGenerator
-from .generators.narrative import NarrativeGenerator
-from .validators.pddl_validator import PDDLValidator
-from .refinement.interactive_loop import InteractiveRefinementLoop
+from quest_master.parsers.lore_parser import LoreParser
+from quest_master.parsers.quest_parser import QuestParser
+from quest_master.generators.pddl_domain import PDDLDomainGenerator
+from quest_master.generators.pddl_problem import PDDLProblemGenerator
+from quest_master.generators.narrative import NarrativeGenerator
+from quest_master.validators.pddl_validator import PDDLValidator
+from quest_master.refinement.interactive_loop import InteractiveRefinementLoop
 from frontend.HTMLGenerator import HTMLGenerator
-from .models.quest_data import SimpleQuestData, EnhancedQuestData
+from quest_master.models.quest_data import SimpleQuestData, EnhancedQuestData
 
 @dataclass
 class GraphState:
@@ -100,8 +100,14 @@ def narrative_generator_node(state: GraphState) -> GraphState:
 
 def html_generator_node(state: GraphState) -> GraphState:
     generator = HTMLGenerator()
+    quest_data = state.enhanced_quest.model_dump()
+    forward = quest_data.get("connections", [])
+    backward = [[dst, src] for src, dst in forward]
+
+    quest_data["connections"] = forward + backward
+
     metadata = {
-        "quest_data": state.enhanced_quest.model_dump() if state.enhanced_quest else {},
+        "quest_data": quest_data,
         "branching_factor": state.branching_factor,
         "depth_constraints": state.depth_constraints,
     }
@@ -120,7 +126,14 @@ def file_writer_node(state: GraphState) -> GraphState:
         (out / "narrative.txt").write_text(state.narrative, encoding="utf-8")
     if state.html:
         (out / "index.html").write_text(state.html, encoding="utf-8")
+
+    quest_data = state.enhanced_quest.model_dump()
+    forward = quest_data.get("connections", [])
+    backward = [[dst, src] for src, dst in forward]
+
+    quest_data["connections"] = forward + backward
     meta = {
+        "quest_data": quest_data,
         "branching_factor": state.branching_factor,
         "depth_constraints": state.depth_constraints,
         "iterations": state.iterations,
@@ -141,7 +154,7 @@ def refinement_decider(state: GraphState) -> str:
 
 # ----- Flow builder -----
 
-def build_quest_flow() -> StateGraph:
+def build_quest_flow():
     graph = StateGraph(GraphState)
     graph.add_node("lore_parser", lore_parser_node)
     graph.add_node("quest_parser", quest_parser_node)
@@ -176,20 +189,37 @@ def build_quest_flow() -> StateGraph:
 
     return graph.compile()
 
+
 def run_flow(lore_path: str, output_dir: str = "output") -> GraphState:
     flow = build_quest_flow()
     initial = GraphState(lore_path=Path(lore_path), output_dir=Path(output_dir))
-    final_state: GraphState = flow.invoke(initial)  # type: ignore
+
+    result_dict = flow.invoke(initial)
+
+    final_state = GraphState(**result_dict)
     return final_state
 
+
+
+'''
 if __name__ == "__main__":
     import argparse
 
+    # Imposta il path corretto relativo al progetto
+    from pathlib import Path
+
+    default_lore_path = Path(__file__).resolve().parent.parent / "lore_document.txt"
+
     parser = argparse.ArgumentParser(description="Quest Master LangGraph workflow")
-    parser.add_argument("lore", help="Path to lore.txt")
-    parser.add_argument("--output", default="output", help="Output directory")
+    parser.add_argument("lore", nargs="?", default=default_lore_path, help="Path to lore.txt")
+    project_root = Path(__file__).resolve().parent.parent
+    default_output = project_root / "examples" / "output"
+
+    parser.add_argument("--output", default=str(default_output), help="Output directory")
+
     args = parser.parse_args()
 
     result = run_flow(args.lore, args.output)
     summary = {"status": "success" if result.success else "failure", "iterations": result.iterations}
     print(json.dumps(summary, indent=2))
+'''
