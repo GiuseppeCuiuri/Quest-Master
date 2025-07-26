@@ -1,0 +1,151 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Eira's Quest</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+    const { useState } = React;
+
+    function App() {
+      const quest = {
+        locations: [
+          "start", "elyria's_hollow", "kaelinor's_spire_of_whispers", 
+          "the_shadowed_spires_of_erebo", "the_forgotten_citadel_of_xeridia",
+          "the_whispering_warrens_of_zha'thik", "the_celestial_cisterns_of_aethereia",
+          "crystal_caverns", "start_branch1", "start_branch2", "elyria's_hollow_branch1",
+          "elyria's_hollow_branch2", "elyria's_hollow_branch3", "kaelinor's_spire_of_whispers_branch1",
+          "kaelinor's_spire_of_whispers_branch2", "kaelinor's_spire_of_whispers_branch3",
+          "the_shadowed_spires_of_erebo_branch1", "the_shadowed_spires_of_erebo_branch2",
+          "the_shadowed_spires_of_erebo_branch3", "the_forgotten_citadel_of_xeridia_branch1",
+          "the_forgotten_citadel_of_xeridia_branch2", "the_whispering_warrens_of_zha'thik_branch1",
+          "the_celestial_cisterns_of_aethereia_branch1"
+        ],
+        obstacles: { "crystal_caverns": "golem" },
+        connections: [
+          ["start", "elyria's_hollow"], ["start", "start_branch1"], ["start", "start_branch2"],
+          ["elyria's_hollow", "kaelinor's_spire_of_whispers"], ["elyria's_hollow", "elyria's_hollow_branch1"],
+          ["elyria's_hollow", "elyria's_hollow_branch2"], ["elyria's_hollow", "elyria's_hollow_branch3"],
+          ["kaelinor's_spire_of_whispers", "the_shadowed_spires_of_erebo"],
+          ["kaelinor's_spire_of_whispers", "kaelinor's_spire_of_whispers_branch1"],
+          ["kaelinor's_spire_of_whispers", "kaelinor's_spire_of_whispers_branch2"],
+          ["kaelinor's_spire_of_whispers", "kaelinor's_spire_of_whispers_branch3"],
+          ["the_shadowed_spires_of_erebo", "the_forgotten_citadel_of_xeridia"],
+          ["the_shadowed_spires_of_erebo", "the_shadowed_spires_of_erebo_branch1"],
+          ["the_shadowed_spires_of_erebo", "the_shadowed_spires_of_erebo_branch2"],
+          ["the_shadowed_spires_of_erebo", "the_shadowed_spires_of_erebo_branch3"],
+          ["the_forgotten_citadel_of_xeridia", "the_whispering_warrens_of_zha'thik"],
+          ["the_forgotten_citadel_of_xeridia", "the_forgotten_citadel_of_xeridia_branch1"],
+          ["the_forgotten_citadel_of_xeridia", "the_forgotten_citadel_of_xeridia_branch2"],
+          ["the_whispering_warrens_of_zha'thik", "the_celestial_cisterns_of_aethereia"],
+          ["the_whispering_warrens_of_zha'thik", "the_whispering_warrens_of_zha'thik_branch1"],
+          ["the_celestial_cisterns_of_aethereia", "crystal_caverns"],
+          ["the_celestial_cisterns_of_aethereia", "the_celestial_cisterns_of_aethereia_branch1"],
+          // Reverse connections
+          ["elyria's_hollow", "start"], ["start_branch1", "start"], ["start_branch2", "start"],
+          ["kaelinor's_spire_of_whispers", "elyria's_hollow"],
+          ["elyria's_hollow_branch1", "elyria's_hollow"], ["elyria's_hollow_branch2", "elyria's_hollow"],
+          ["elyria's_hollow_branch3", "elyria's_hollow"],
+          ["the_shadowed_spires_of_erebo", "kaelinor's_spire_of_whispers"],
+          ["kaelinor's_spire_of_whispers_branch1", "kaelinor's_spire_of_whispers"],
+          ["kaelinor's_spire_of_whispers_branch2", "kaelinor's_spire_of_whispers"],
+          ["kaelinor's_spire_of_whispers_branch3", "kaelinor's_spire_of_whispers"],
+          ["the_forgotten_citadel_of_xeridia", "the_shadowed_spires_of_erebo"],
+          ["the_shadowed_spires_of_erebo_branch1", "the_shadowed_spires_of_erebo"],
+          ["the_shadowed_spires_of_erebo_branch2", "the_shadowed_spires_of_erebo"],
+          ["the_shadowed_spires_of_erebo_branch3", "the_shadowed_spires_of_erebo"],
+          ["the_whispering_warrens_of_zha'thik", "the_forgotten_citadel_of_xeridia"],
+          ["the_forgotten_citadel_of_xeridia_branch1", "the_forgotten_citadel_of_xeridia"],
+          ["the_forgotten_citadel_of_xeridia_branch2", "the_forgotten_citadel_of_xeridia"],
+          ["the_celestial_cisterns_of_aethereia", "the_whispering_warrens_of_zha'thik"],
+          ["the_whispering_warrens_of_zha'thik_branch1", "the_whispering_warrens_of_zha'thik"],
+          ["crystal_caverns", "the_celestial_cisterns_of_aethereia"],
+          ["the_celestial_cisterns_of_aethereia_branch1", "the_celestial_cisterns_of_aethereia"]
+        ],
+        initial_location: "start"
+      };
+
+      const [currentLocation, setCurrentLocation] = useState(quest.initial_location);
+      const [defeatedObstacles, setDefeatedObstacles] = useState([]);
+
+      const getConnectedLocations = () => {
+        return quest.connections
+          .filter(([from]) => from === currentLocation)
+          .map(([, to]) => to);
+      };
+
+      const handleMove = (location) => {
+        setCurrentLocation(location);
+      };
+
+      const handleDefeat = () => {
+        setDefeatedObstacles([...defeatedObstacles, "golem"]);
+      };
+
+      const isGoalAchieved = currentLocation === "crystal_caverns" && defeatedObstacles.includes("golem");
+
+      return (
+        <div className="p-8 max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4">Eira's Quest</h1>
+
+          <div className="mb-6 prose">
+            <p>In the realm of Aethoria, where the sun dipped into the horizon and painted the sky with hues of crimson and gold, the village of Brindlemark lay nestled between the rolling hills. It was here that Eira, a young warrior, dwelled, driven by an unyielding determination to shatter the Dark Crystal that imprisoned the land in eternal darkness.</p>
+            <p>Eira's quest began when her village elder, Arinthal, revealed to her the ancient prophecy: "When the light of hope is extinguished, a hero shall arise, armed with courage and wisdom, to shatter the darkness." Eria knew she was the chosen one, for she possessed an unquenchable spirit and a will forged in the fire of adversity.</p>
+            <p>Her journey took her across treacherous landscapes and through mystifying forests, where mythical creatures roamed free. As she approached Crystal Caverns, her excitement grew, tempered only by the cautionary tales whispered among the villagers: the entrance was sealed by an ancient golem, awakened by any who dared to intrude.</p>
+            <p>With Kragnir defeated, Eira entered the Crystal Caverns, her heart pounding in anticipation of the final challenge. As she approached the pedestal holding the dark crystal, a wave of energy washed over her, testing her resolve and willpower. The crystal's malevolent power surged through her, attempting to shatter her determination.</p>
+            <p>Undeterred, Eira summoned the collective wisdom of her village and the ancient prophecy, channeling their combined strength into a mighty cry: "For Brindlemark! For the light!" With renewed conviction, she grasped Ember and shattered the Dark Crystal with a resounding blow.</p>
+          </div>
+
+          <div className="mb-4 p-4 bg-gray-100 rounded">
+            <h2 className="text-xl font-semibold mb-2">Current Location: {currentLocation.replace(/_/g, ' ')}</h2>
+
+            {quest.obstacles[currentLocation] && !defeatedObstacles.includes(quest.obstacles[currentLocation]) ? (
+              <div className="mt-4">
+                <p className="mb-2">A massive stone golem blocks your path!</p>
+                <button
+                  onClick={handleDefeat}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Defeat Golem
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h3 className="font-medium mb-2">Available Paths:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {getConnectedLocations().map(location => (
+                    <button
+                      key={location}
+                      onClick={() => handleMove(location)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      Go to {location.replace(/_/g, ' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {isGoalAchieved && (
+            <div className="mt-6 p-4 bg-green-100 rounded text-green-800">
+              <h2 className="text-2xl font-bold">Victory!</h2>
+              <p>You've reached the Crystal Caverns and defeated the golem!</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
